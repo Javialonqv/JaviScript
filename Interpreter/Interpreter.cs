@@ -28,6 +28,16 @@ namespace Interpreter
 
         public static dynamic GetValue(string text)
         {
+            // Ver si es un valor nulo.
+            if (text == "null" || text == "Null" || text == "undefined" || text == "Undefined")
+            {
+                return null;
+            }
+
+            // Intentar tratarlo como una operacion aritmética.
+            object aritmeticOperationResult = AritmeticOperationOrConcatenation(text);
+            if (aritmeticOperationResult != null) return aritmeticOperationResult;
+
             // Si es un string:
             if (text.StartsWith("\"") && text.EndsWith("\""))
             {
@@ -64,24 +74,17 @@ namespace Interpreter
                 return Program.variables[text];
             }
 
-            // Intentar tratarlo como una operacion aritmética.
-            object aritmeticOperationResult = AritmeticOperationOrConcatenation(text);
-            if (aritmeticOperationResult != null) return aritmeticOperationResult;
-
-            return null;
+            return text;
         }
         public static object AritmeticOperationOrConcatenation(string text)
         {
-            //try
-            //{
-            //    Expression expression = new Expression(text);
-            //    var result = expression.Evaluate();
-            //    return result;
-            //}
-            //catch
-            //{
-            //    return null;
-            //}
+            bool execute = false;
+            foreach (char c in text)
+            {
+                if (IsOperator(c)) execute = true;
+            }
+
+            if (!execute) return null;
 
             text = text.Replace(" ", "");
             List<string> tokens = new List<string>();
