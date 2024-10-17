@@ -6,7 +6,6 @@ namespace Interpreter
 {
     internal class Program
     {
-        const string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         string codeFilePath = "";
 
         string[] fileLines = Array.Empty<string>();

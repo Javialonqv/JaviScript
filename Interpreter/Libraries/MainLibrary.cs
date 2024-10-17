@@ -27,13 +27,18 @@ namespace Interpreter.Libraries
                         ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
                         break;
                     }
-                    Console.Write(parameters[0]);
+                    Print(parameters[0]);
                     result = null;
                     return true;
             }
 
             result = null;
             return false;
+        }
+
+        void Print(object message)
+        {
+            Console.Write(message);
         }
     }
 }

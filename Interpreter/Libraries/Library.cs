@@ -6,14 +6,10 @@ using System.Threading.Tasks;
 
 namespace Interpreter.Libraries
 {
-    public class Library
+    public abstract class Library
     {
-        public List<string> avaiableFunctions { get; set; } = new List<string>(); 
+        public List<string> avaiableFunctions;
 
-        public virtual bool ExecuteFunction(string command, object[] parameters, out object? result)
-        {
-            result = null;
-            return false;
-        }
+        public abstract bool ExecuteFunction(string command, object[] parameters, out object? result);
     }
 }

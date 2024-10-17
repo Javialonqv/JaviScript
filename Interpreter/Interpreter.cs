@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Media.AppBroadcasting;
-using NCalc;
 using Interpreter.Libraries;
 using Windows.ApplicationModel.Background;
 
@@ -19,8 +18,14 @@ namespace Interpreter
         IMPORT,
         VAR
     }
+
     internal class Interpreter
     {
+        static Dictionary<string, string> integratedLibraries = new Dictionary<string, string>()
+        {
+            { "console", "ConsoleLibrary" }
+        };
+
         public static bool ItsABuiltInCommand(string commandLine)
         {
             string[] splited = commandLine.SplitWithSpaces();
@@ -212,6 +217,27 @@ namespace Interpreter
         {
             switch (commandType)
             {
+                case BuiltInCommand.IMPORT:
+                    if (parameters.Length != 1)
+                    {
+                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                        break;
+                    }
+
+                    if (integratedLibraries.ContainsKey(parameters[0].ToString()))
+                    {
+#pragma warning disable CS8600
+                        string realLibraryClassName = integratedLibraries[parameters[0].ToString()];
+                        Program.loadedLibraries.Add((Library)Utilities.CreateInstance(realLibraryClassName));
+                    }
+                    else
+                    {
+                        ExceptionsManager.LibraryNotFound(parameters[0].ToString());
+                        break;
+                    }
+                    result = null;
+                    return true;
+
                 case BuiltInCommand.VAR:
                     if (parameters.Length != 2)
                     {

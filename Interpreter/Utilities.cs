@@ -43,5 +43,13 @@ namespace Interpreter
             result = new string(chars).Replace("\0", "");
             return result;
         }
+
+        public static object? CreateInstance(string className)
+        {
+            Type? type = Type.GetType("Interpreter.Libraries." + className);
+
+#pragma warning disable CS8604
+            return Activator.CreateInstance(type);
+        }
     }
 }

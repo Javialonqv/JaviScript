@@ -40,5 +40,9 @@ namespace Interpreter
         {
             PrintError(Program.currentLine, $"The \"{@operator}\" operator is not valid with types \"{firstType}\" and \"{secondType}\".");
         }
+        public static void LibraryNotFound(string libraryName)
+        {
+            PrintError(Program.currentLine, $"The \"{libraryName}\" can't be found!");
+        }
     }
 }
