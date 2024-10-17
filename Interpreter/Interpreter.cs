@@ -40,6 +40,15 @@ namespace Interpreter
                 return intResult;
             }
 
+            // Si es un float.
+            if (text.EndsWith("f"))
+            {
+                if (float.TryParse(text.Substring(0, text.Length - 2), out float floatResult))
+                {
+                    return floatResult;
+                }
+            }
+
             // Si de casualidad es otro comando.
             if (Enum.TryParse(typeof(BuiltInCommand), text, true, out object? commandResult))
             {
