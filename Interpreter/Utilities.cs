@@ -51,5 +51,10 @@ namespace Interpreter
 #pragma warning disable CS8604
             return Activator.CreateInstance(type);
         }
+
+        public static bool IsNumber(object obj)
+        {
+            return obj is int || obj is float;
+        }
     }
 }

@@ -13,7 +13,9 @@ namespace Interpreter.Libraries
         {
             avaiableFunctions = new ()
             {
-                "print"
+                "print",
+                "printl",
+                "exit"
             };
         }
 
@@ -27,7 +29,37 @@ namespace Interpreter.Libraries
                         ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
                         break;
                     }
-                    Print(parameters[0]);
+                    Print(parameters[0], false);
+                    result = null;
+                    return true;
+
+                case "printl":
+                    if (parameters.Length != 1)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
+                        break;
+                    }
+                    Print(parameters[0], true);
+                    result = null;
+                    return true;
+                case "exit":
+                    if (parameters.Length > 1)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
+                        break;
+                    }
+                    if (parameters.Length == 1)
+                    {
+                        if (Utilities.IsNumber(parameters[0]))
+                        {
+                            Exit((int)parameters[0]);
+                        }
+                        else
+                        {
+                            ExceptionsManager.InvalidFunctionParameterType(command, 0, parameters[0].GetType().Name, "int");
+                        }
+                    }
+                    if (parameters.Length == 0) { Exit(0); }
                     result = null;
                     return true;
             }
@@ -36,9 +68,15 @@ namespace Interpreter.Libraries
             return false;
         }
 
-        void Print(object message)
+        void Print(object message, bool printLine)
         {
             Console.Write(message);
+            if (printLine) { Console.WriteLine(); }
+        }
+
+        void Exit(int exitCode)
+        {
+            Environment.Exit(exitCode);
         }
     }
 }

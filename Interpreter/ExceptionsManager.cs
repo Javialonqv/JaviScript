@@ -35,6 +35,10 @@ namespace Interpreter
         {
             PrintError(Program.currentLine, $"The \"{functionName}\" function doesn't take {parametersCount} parameters.");
         }
+        public static void InvalidFunctionParameterType(string functionName, int parameterIndex, string givenType, string expectedType)
+        {
+            PrintError(Program.currentLine, $"The \"{parameterIndex + 1}\" parameter in the \"{functionName}\" function doesn't take a {givenType} value. Has to be {expectedType}.");
+        }
 
         public static void InvalidOperation(string @operator, string firstType, string secondType)
         {
