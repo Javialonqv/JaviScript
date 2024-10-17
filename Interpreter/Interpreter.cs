@@ -78,14 +78,15 @@ namespace Interpreter
         }
         public static object AritmeticOperationOrConcatenation(string text)
         {
+            // Checar si ejecutar si o no.
             bool execute = false;
             foreach (char c in text)
             {
                 if (IsOperator(c)) execute = true;
             }
-
             if (!execute) return null;
 
+            // Crear los "tokens".
             text = text.Replace(" ", "");
             List<string> tokens = new List<string>();
             string currentToken = "";
@@ -104,11 +105,13 @@ namespace Interpreter
                     currentToken += c;
                 }
             }
+            // Añadir el ultimo valor detectado si no está vacío.
             if (!string.IsNullOrEmpty(currentToken))
             {
                 tokens.Add(currentToken);
             }
 
+            // Si es que hay parentesis tanto de abertura como de cierre, realizar las operaciones dentro de ellos primero.
             for (int i = 0; i < tokens.Count; i++)
             {
                 if (tokens[i] == "(")
@@ -127,8 +130,10 @@ namespace Interpreter
                 }
             }
 
+            // Remover cualquier espacio en blanco dentro de los tokens.
             tokens.RemoveAll(t => string.IsNullOrWhiteSpace(t));
 
+            // Realizar las operaciones recorriendo todos los tokens.
             dynamic finalResult = null;
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -136,10 +141,26 @@ namespace Interpreter
 
                 if (IsOperator(tokens[i].ToCharArray()[0]))
                 {
-                    if (tokens[i] == "+") { finalResult += GetValue(tokens[i + 1]); }
-                    if (tokens[i] == "-") { finalResult -= GetValue(tokens[i + 1]); }
-                    if (tokens[i] == "/") { finalResult /= GetValue(tokens[i + 1]); }
-                    if (tokens[i] == "*") { finalResult *= GetValue(tokens[i + 1]); }
+                    if (tokens[i] == "+")
+                    {
+                        try { finalResult += GetValue(tokens[i + 1]); }
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null; }
+                    }
+                    if (tokens[i] == "-")
+                    {
+                        try { finalResult -= GetValue(tokens[i + 1]); }
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null;}
+                    }
+                    if (tokens[i] == "/")
+                    {
+                        try { finalResult /= GetValue(tokens[i + 1]); }
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null;}
+                    }
+                    if (tokens[i] == "*")
+                    {
+                        try { finalResult *= GetValue(tokens[i + 1]); }
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null;}
+                    }
                     i++;
                 }
                 else
@@ -148,6 +169,7 @@ namespace Interpreter
                 }
             }
 
+            // Finalmente, retornar el valor final obtenido.
             return finalResult;
         }
         static bool IsOperator(char ch)
@@ -171,8 +193,13 @@ namespace Interpreter
         }
         public static object[] GetBuiltInCommandParameters(string commandLine)
         {
-            object[] splited = commandLine.Split(" ").Skip(1).ToArray();
-            return splited.Select(obj => obj = GetValue(obj.ToString())).ToArray();
+            //object[] splited = commandLine.Split(" ").Skip(1).ToArray();
+
+            object[] temp1 = commandLine.Split(" ").Skip(1).ToArray();
+            string temp2 = string.Join("", temp1);
+            object[] result = temp2.Split(",");
+
+            return result.Select(obj => obj = GetValue(obj.ToString())).ToArray();
         }
         public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters)
         {

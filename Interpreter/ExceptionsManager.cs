@@ -22,21 +22,23 @@ namespace Interpreter
         {
             PrintError(Program.currentLine, $"The built-in command \"{commandName}\" doesn't take {parametersCount} parameters.");
         }
+
         public static void NoFunctionParenthesisFound(string functionName)
         {
             PrintError(Program.currentLine, $"The \"{functionName}\" function's parenthesis can't be found.");
-        }
-        public static void IncorrectFunctionParametersNumber(string functionName, int parametersCount)
-        {
-            PrintError(Program.currentLine, $"The \"{functionName}\" function doesn't take {parametersCount} parameters.");
         }
         public static void FunctionNotFound(string functionName)
         {
             PrintError(Program.currentLine, $"The \"{functionName}\" function can´t be found. Are you missing a library?");
         }
-        public static void UndefinedVariable(string variableNmae)
+        public static void IncorrectFunctionParametersNumber(string functionName, int parametersCount)
         {
+            PrintError(Program.currentLine, $"The \"{functionName}\" function doesn't take {parametersCount} parameters.");
+        }
 
+        public static void InvalidOperation(string @operator, string firstType, string secondType)
+        {
+            PrintError(Program.currentLine, $"The \"{@operator}\" operator is not valid with types \"{firstType}\" and \"{secondType}\".");
         }
     }
 }
