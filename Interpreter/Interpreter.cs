@@ -21,7 +21,7 @@ namespace Interpreter
     {
         public static bool ItsABuiltInCommand(string commandLine)
         {
-            string[] splited = commandLine.Split(" ");
+            string[] splited = commandLine.SplitWithSpaces();
 
             return Enum.TryParse(typeof(BuiltInCommand), splited[0], true, out object? result);
         }
@@ -87,7 +87,7 @@ namespace Interpreter
             if (!execute) return null;
 
             // Crear los "tokens".
-            text = text.Replace(" ", "");
+            text = text.RemoveWhitespaces();
             List<string> tokens = new List<string>();
             string currentToken = "";
             for (int i = 0; i < text.Length; i++)
@@ -179,7 +179,7 @@ namespace Interpreter
 
         public static BuiltInCommand GetBuiltItCommand(string commandLine)
         {
-            string[] splited = commandLine.Split(" ");
+            string[] splited = commandLine.SplitWithSpaces();
 
             if (Enum.TryParse(typeof(BuiltInCommand), splited[0], true, out object? result))
             {
@@ -195,7 +195,7 @@ namespace Interpreter
         {
             //object[] splited = commandLine.Split(" ").Skip(1).ToArray();
 
-            object[] temp1 = commandLine.Split(" ").Skip(1).ToArray();
+            object[] temp1 = commandLine.SplitWithSpaces().Skip(1).ToArray();
             string temp2 = string.Join("", temp1);
             object[] result = temp2.Split(",");
 
@@ -247,7 +247,7 @@ namespace Interpreter
                 return null;
             }
 
-            string[] splitedParameters = commandLine.Substring(firstIndex + 1, secondIndex - firstIndex - 1).Replace(" ", "").Split(',');
+            string[] splitedParameters = commandLine.Substring(firstIndex + 1, secondIndex - firstIndex - 1).RemoveWhitespaces().Split(',');
             foreach (string parameter in splitedParameters)
             {
                 //string toAdd = parameter.Substring(0, parameter.Length - 2);
