@@ -10,7 +10,7 @@ namespace Interpreter
     {
         public static string[] SplitWithSpaces(this string text)
         {
-            string[] splited = null;
+            string[]? splited = null;
             var chars = text.ToCharArray();
             bool isQuote = false;
 

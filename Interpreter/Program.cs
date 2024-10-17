@@ -7,9 +7,9 @@ namespace Interpreter
     internal class Program
     {
         const string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        string codeFilePath;
+        string codeFilePath = "";
 
-        string[] fileLines;
+        string[] fileLines = Array.Empty<string>();
         public static int currentLine;
 
         public static List<Library> loadedLibraries = new List<Library>();

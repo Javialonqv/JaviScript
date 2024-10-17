@@ -10,6 +10,8 @@ using NCalc;
 using Interpreter.Libraries;
 using Windows.ApplicationModel.Background;
 
+#pragma warning disable CS8603
+#pragma warning disable CS8602
 namespace Interpreter
 {
     public enum BuiltInCommand
@@ -123,6 +125,7 @@ namespace Interpreter
                             string toPass = string.Join("", tokens.GetRange(i + 1, j - 1 - 3));
                             object result = AritmeticOperationOrConcatenation(toPass);
                             tokens.RemoveRange(i, j - i + 1);
+#pragma warning disable CS8604
                             tokens.Insert(i, result.ToString());
                             break;
                         }
@@ -134,7 +137,7 @@ namespace Interpreter
             tokens.RemoveAll(t => string.IsNullOrWhiteSpace(t));
 
             // Realizar las operaciones recorriendo todos los tokens.
-            dynamic finalResult = null;
+            dynamic? finalResult = null;
             for (int i = 0; i < tokens.Count; i++)
             {
                 if (string.IsNullOrEmpty(tokens[i])) continue;
