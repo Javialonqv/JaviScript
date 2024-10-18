@@ -55,7 +55,7 @@ namespace Interpreter
         {
             for (int i = 0; i < fileLines.Length; i++)
             {
-                currentLine = i;
+                currentLine = i + 1;
                 string line = fileLines[i];
 
                 if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) continue; // If the line is null of empty, skip it.
@@ -66,6 +66,11 @@ namespace Interpreter
                     BuiltInCommand command = Interpreter.GetBuiltItCommand(line);
                     if (command == BuiltInCommand.FUNC)
                     {
+                        if (ifBlocks.Count > 0)
+                        {
+                            ExceptionsManager.CantDefineFunctionsInsideOfBlock("If");
+                            continue;
+                        }
                         if (insideOfAFunctionBlock)
                         {
                             ExceptionsManager.FunctionDetectedBeforeClosingTheLastOne();
@@ -107,9 +112,29 @@ namespace Interpreter
                         funcParameters = new List<string>();
                         funcStartIndex = 0;
                     }
+                    if (command == BuiltInCommand.IF)
+                    {
+                        ifBlocks.Push(false);
+                    }
+                    if (command == BuiltInCommand.ENDIF)
+                    {
+                        if (ifBlocks.Count > 0)
+                        {
+                            ifBlocks.Pop();
+                        }
+                        else
+                        {
+                            ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "EndBlock");
+                            continue;
+                        }
+                    }
                 }
             }
 
+            if (ifBlocks.Count > 0)
+            {
+                ExceptionsManager.BlockNotClosed("If");
+            }
             // If true that means no EndFunc code was reached. Throw an error.
             if (insideOfAFunctionBlock)
             {
@@ -120,7 +145,10 @@ namespace Interpreter
             // Resset this.
             currentLine = 0;
             insideOfAFunctionBlock = false;
+            ifBlocks = new Stack<bool>();
         }
+
+
         void ExecuteCommands()
         {
             // Iterate foreach file line and execute it's code.

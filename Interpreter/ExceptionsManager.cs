@@ -48,7 +48,18 @@ namespace Interpreter
             PrintError(Program.currentLine, $"A new function was detected before the last one was closed using \"EndFunc\".");
         }
 
-
+        public static void CantDefineFunctionsInsideOfBlock(string blockName)
+        {
+            PrintError(Program.currentLine, $"Can't define a function inside of a {blockName} block.");
+        }
+        public static void BlockNotClosed(string blockName)
+        {
+            PrintError(Program.currentLine, $"A {blockName} wasn't closed.");
+        }
+        public static void EndBlockDetectedBeforeDefiningANewOne(string blockName, string endBlockName)
+        {
+            PrintError(Program.currentLine, $"{endBlockName} was detected before a new one could be declared using \"{blockName}\".");
+        }
         public static void InvalidOperation(string @operator, string firstType, string secondType)
         {
             PrintError(Program.currentLine, $"The \"{@operator}\" operator is not valid with types \"{firstType}\" and \"{secondType}\".");
