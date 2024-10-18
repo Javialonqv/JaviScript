@@ -131,6 +131,7 @@ namespace Interpreter
                 }
             }
 
+            // If the If Blocks count is greater than 0, that means an If block wasn't closed before reaching the end of the file.
             if (ifBlocks.Count > 0)
             {
                 ExceptionsManager.BlockNotClosed("If");
