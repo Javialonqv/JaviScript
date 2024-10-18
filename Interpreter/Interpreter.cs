@@ -201,15 +201,16 @@ namespace Interpreter
         // Tries the specified command as an assigment one. 
         public static bool TryToAssign(string commandLine)
         {
+            // Remove all the whitespaces in the command.
             commandLine = commandLine.RemoveWhitespaces();
 
-            // The assigment commands ALWAYS have an equals character.
-            int equalsIndex = commandLine.IndexOf('=');
-            if (equalsIndex == -1) return false;
+            // The assigment commands ALWAYS have an equals character, ONLY ONE.
+            if (commandLine.Count(ch => ch == '=') != 1) return false;
+            string[] splited = commandLine.Split('=');
 
             // Get the variable name and the new value.
-            string variableName = commandLine.Substring(0, equalsIndex);
-            string newValue = commandLine.Substring(equalsIndex + 1);
+            string variableName = splited[0];
+            string newValue = splited[1];
 
             // This only will work if the specified variable already exists and it's defined.
             if (Program.variables.ContainsKey(variableName))
