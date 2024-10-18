@@ -72,12 +72,11 @@ namespace Interpreter
                 }
             }
 
-            // If by any chance it's another command.
-            if (Enum.TryParse(typeof(BuiltInCommand), text, true, out object? commandResult))
+            // If by any chance it's a function itself.
+            string funcName = GetFunction(text, true);
+            object[] funcParameters = GetFunctionParameters(text);
+            if (ExecuteFunction(funcName, funcParameters, out object? result, true))
             {
-                string command = GetFunction(text);
-                var parameters = GetFunctionParameters(text);
-                Interpreter.ExecuteFunction(command, parameters, out object? result);
                 return result;
             }
 
@@ -297,7 +296,7 @@ namespace Interpreter
         }
 
         // Gets the specified function's name.
-        public static string GetFunction(string commandLine)
+        public static string GetFunction(string commandLine, bool skipErrors = false)
         {
             // Gets the parenthesis indexes.
             int parenthesisIndex = commandLine.IndexOf('(');
@@ -305,7 +304,7 @@ namespace Interpreter
             // A function ALWAYS contains the TWO parenthesis.
             if (parenthesisIndex == -1 || parenthesis2Index == -1)
             {
-                ExceptionsManager.NoFunctionParenthesisFound(commandLine);
+                if (!skipErrors) ExceptionsManager.NoFunctionParenthesisFound(commandLine);
                 return "";
             }
 
@@ -344,7 +343,7 @@ namespace Interpreter
             return ExecuteFunction(function, parameters, out object? result);
         }
         // Executes the specified function.
-        public static bool ExecuteFunction(string function, object[] parameters, out object? result)
+        public static bool ExecuteFunction(string function, object[] parameters, out object? result, bool skipErrors = false)
         {
             // First check in the built-in libraries that are LOADED.
             foreach (Library library in Program.loadedLibraries)
@@ -386,7 +385,7 @@ namespace Interpreter
             }
 
             // If nothing works, throw an error and return false.
-            ExceptionsManager.FunctionNotFound(function);
+            if (!skipErrors) ExceptionsManager.FunctionNotFound(function);
 
             result = null;
             return false;
