@@ -16,73 +16,73 @@ namespace Interpreter
 
         public static void BuiltInCommandNotFound(string commandName)
         {
-            PrintError(Program.currentLine, $"The built-in command \"{commandName}\" can´t be found.");
+            PrintError(Init.currentLine, $"The built-in command \"{commandName}\" can´t be found.");
         }
         public static void IncorrectCommandParametersNumber(string commandName, int parametersCount)
         {
-            PrintError(Program.currentLine, $"The built-in command \"{commandName}\" doesn't take {parametersCount} parameters.");
+            PrintError(Init.currentLine, $"The built-in command \"{commandName}\" doesn't take {parametersCount} parameters.");
         }
 
         public static void NoFunctionParenthesisFound(string functionName)
         {
-            PrintError(Program.currentLine, $"The \"{functionName}\" function's parenthesis can't be found.");
+            PrintError(Init.currentLine, $"The \"{functionName}\" function's parenthesis can't be found.");
         }
         public static void FunctionNotFound(string functionName)
         {
-            PrintError(Program.currentLine, $"The \"{functionName}\" function can´t be found. Are you missing a library?");
+            PrintError(Init.currentLine, $"The \"{functionName}\" function can´t be found. Are you missing a library?");
         }
         public static void IncorrectFunctionParametersNumber(string functionName, int parametersCount)
         {
-            PrintError(Program.currentLine, $"The \"{functionName}\" function doesn't take {parametersCount} parameters.");
+            PrintError(Init.currentLine, $"The \"{functionName}\" function doesn't take {parametersCount} parameters.");
         }
         public static void InvalidFunctionParameterType(string functionName, int parameterIndex, string givenType, string expectedType)
         {
-            PrintError(Program.currentLine, $"The \"{parameterIndex + 1}\" parameter in the \"{functionName}\" function doesn't take a {givenType} value. Has to be {expectedType}.");
+            PrintError(Init.currentLine, $"The \"{parameterIndex + 1}\" parameter in the \"{functionName}\" function doesn't take a {givenType} value. Has to be {expectedType}.");
         }
         public static void FunctionsWasntClosed(string functionName)
         {
-            PrintError(Program.currentLine, $"The \"{functionName}\" function wasn't closed using \"EndFunc\".");
+            PrintError(Init.currentLine, $"The \"{functionName}\" function wasn't closed using \"EndFunc\".");
         }
         public static void FunctionDetectedBeforeClosingTheLastOne()
         {
-            PrintError(Program.currentLine, $"A new function was detected before the last one was closed using \"EndFunc\".");
+            PrintError(Init.currentLine, $"A new function was detected before the last one was closed using \"EndFunc\".");
         }
 
         public static void CantDefineFunctionsInsideOfBlock(string blockName)
         {
-            PrintError(Program.currentLine, $"Can't define a function inside of a {blockName} block.");
+            PrintError(Init.currentLine, $"Can't define a function inside of a {blockName} block.");
         }
         public static void BlockNotClosed(string blockName)
         {
-            PrintError(Program.currentLine, $"A {blockName} wasn't closed.");
+            PrintError(Init.currentLine, $"A {blockName} wasn't closed.");
         }
         public static void EndBlockDetectedBeforeDefiningANewOne(string blockName, string endBlockName)
         {
-            PrintError(Program.currentLine, $"{endBlockName} was detected before a new one could be declared using \"{blockName}\".");
+            PrintError(Init.currentLine, $"{endBlockName} was detected before a new one could be declared using \"{blockName}\".");
         }
         public static void InvalidOperation(string @operator, string firstType, string secondType)
         {
-            PrintError(Program.currentLine, $"The \"{@operator}\" operator is not valid with types \"{firstType}\" and \"{secondType}\".");
+            PrintError(Init.currentLine, $"The \"{@operator}\" operator is not valid with types \"{firstType}\" and \"{secondType}\".");
         }
         public static void InvalidFunctionName(string functionName)
         {
-            PrintError(Program.currentLine, $"The funciton name \"{functionName}\" is NOT valid!");
+            PrintError(Init.currentLine, $"The funciton name \"{functionName}\" is NOT valid!");
         }
         public static void LibraryNotFound(string libraryName)
         {
-            PrintError(Program.currentLine, $"The \"{libraryName}\" can't be found!");
+            PrintError(Init.currentLine, $"The \"{libraryName}\" can't be found!");
         }
         public static void UndefinedVariable(string variableName)
         {
-            PrintError(Program.currentLine, $"The variable of name \"{variableName}\" it's undefined.");
+            PrintError(Init.currentLine, $"The variable of name \"{variableName}\" it's undefined.");
         }
         public static void VariableOrFunctionAlreadyDefined(string name)
         {
-            PrintError(Program.currentLine, $"The variable or function \"{name}\" is already defined.");
+            PrintError(Init.currentLine, $"The variable or function \"{name}\" is already defined.");
         }
         public static void CantConvertFromTo(object value, string startType, string endType)
         {
-            PrintError(Program.currentLine, $"Can't convert \"{value}\" from type \"{startType}\" to type \"{endType}\".");
+            PrintError(Init.currentLine, $"Can't convert \"{value}\" from type \"{startType}\" to type \"{endType}\".");
         }
     }
 }

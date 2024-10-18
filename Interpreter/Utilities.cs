@@ -70,5 +70,11 @@ namespace Interpreter
 
             return true;
         }
+
+        // Just check if the specified char is an operator LOL.
+        public static bool IsOperator(char ch)
+        {
+            return ch == '+' || ch == '-' || ch == '/' || ch == '*';
+        }
     }
 }

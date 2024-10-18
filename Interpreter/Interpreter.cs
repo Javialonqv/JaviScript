@@ -29,21 +29,404 @@ namespace Interpreter
 
     internal class Interpreter
     {
-        // All the built-in libraries.
-        static Dictionary<string, string> integratedLibraries = new Dictionary<string, string>()
+        // Info to create custom functions.
+        static string funcName = "";
+        static List<string> funcParameters = new List<string>();
+        static int funcStartIndex = 0;
+        static bool funcReturnsSomething = false;
+
+        public static bool ExecuteLine(string line, bool executeFunc = false)
         {
-            { "console", "ConsoleLibrary" },
-            { "convert", "ConvertLibrary" }
-        };
+            return ExecuteLine(line, out object? result, executeFunc);
+        }
+        public static bool ExecuteLine(string line, out object? result, bool executeFunc = false)
+        {
+            result = null;
+
+            // Those lines that starts with '#' are comments, ignore them.
+            if (line.StartsWith("# ")) return false;
+
+            // If the line is null of empty, skip it.
+            if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return false;
+
+            if (ItsABuiltInCommand(line)) // If it's a built-in command.
+            {
+                BuiltInCommand command = GetBuiltItCommand(line);
+
+                // If the command is Else.
+                if (command == BuiltInCommand.ELSE)
+                {
+                    if (Init.ifBlocks.Count > 0) { Init.inAnElseStatement = true; }
+                    else { ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "Else"); }
+                }
+                // If the command is ElseIf.
+                else if (command == BuiltInCommand.ELSEIF)
+                {
+                    if (Init.ifBlocks.Count > 0)
+                    {
+                        var elseIfParameters = GetBuiltInCommandParameters(line);
+                        return ExecuteCommand(command, elseIfParameters, out result);
+                    }
+                }
+                // If the commmand is EndIf, remove the last If code block.
+                else if (command == BuiltInCommand.ENDIF)
+                {
+                    if (Init.ifBlocks.Count > 0) Init.ifBlocks.Pop();
+                    Init.inAnElseStatement = false;
+                }
+
+                // First check if it's inside of a If block, if that's the case, check if this code should be executed.
+                if (Init.ifBlocks.Count > 0)
+                {
+                    // Just execute if the "If" is false and it's an else code block
+                    // OR if the "If" is true and it's NOT in an else code block.
+                    if ((!Init.ifBlocks.Peek() && !Init.inAnElseStatement) || (Init.ifBlocks.Peek() && Init.inAnElseStatement))
+                    {
+                        return false;
+                    }
+                }
+
+                #region Just to skip the functions keywords
+                if (command == BuiltInCommand.FUNC)
+                {
+                    Init.insideOfAFunctionBlock = true;
+                    return false;
+                }
+                if (command == BuiltInCommand.ENDFUNC)
+                {
+                    Init.insideOfAFunctionBlock = false;
+                    return false;
+                }
+                if (Init.insideOfAFunctionBlock) return false;
+                #endregion
+
+                var parameters = GetBuiltInCommandParameters(line);
+                return ExecuteCommand(command, parameters, out result);
+            }
+            else // It's a function with PARENTHESIS.
+            {
+                // First check if it's inside of a If block, if that's the case, check if this code should be executed.
+                if (Init.ifBlocks.Count > 0)
+                {
+                    // Just execute if the "If" is false and it's an else code block
+                    // OR if the "If" is true and it's NOT in an else code block.
+                    if ((!Init.ifBlocks.Peek() && !Init.inAnElseStatement) || (Init.ifBlocks.Peek() && Init.inAnElseStatement))
+                    {
+                        return false;
+                    }
+                }
+
+                // If it's inside of a function code block and this time can't execute it, return.
+                if (Init.insideOfAFunctionBlock && !executeFunc) return false;
+
+                // First of all, check if the command is an assigment one.
+                // The method itself manages the variable assigment, just return false.
+                if (TryToAssign(line)) return false;
+
+                // Just get the function name and parameters and execute it.
+                string command = GetFunction(line);
+                if (string.IsNullOrEmpty(command)) return false;
+                var parameters = GetFunctionParameters(line);
+                return ExecuteFunction(command, parameters, out result);
+            }
+        }
 
         // To check if the specified command it's a buit-in one.
         public static bool ItsABuiltInCommand(string commandLine)
         {
+            // Split the command in spaces.
             string[] splited = commandLine.SplitWithSpaces();
 
+            // If the first text can be parsed to a Built-In command, that means it's a built-in one.
             return Enum.TryParse(typeof(BuiltInCommand), splited[0].Trim(), true, out object? result);
         }
 
+        #region Built-In Commands
+        // To check if the given commands are built-in and throw no errors, first use the "ItsABuiltInCommand" method.
+
+        // Gets the built-in command.
+        public static BuiltInCommand GetBuiltItCommand(string commandLine)
+        {
+            // Splits the command into spaces.
+            string[] splited = commandLine.SplitWithSpaces();
+
+            // Try to parse the first element (the command itself) to the enum.
+            if (Enum.TryParse(typeof(BuiltInCommand), splited[0].Trim(), true, out object? result))
+            {
+                return (BuiltInCommand)result;
+            }
+            else
+            {
+                ExceptionsManager.BuiltInCommandNotFound(splited[0]);
+                return default;
+            }
+        }
+
+        // Gets the built-in command parameters.
+        public static object[] GetBuiltInCommandParameters(string commandLine)
+        {
+            // Splits into spaces, then skips the first element.
+            object[] splitedIntoSpaces = commandLine.SplitWithSpaces().Skip(1).ToArray();
+
+            // Combine all this into a simple string.
+            string combinedText = string.Join("", splitedIntoSpaces);
+
+            // If the "combinedText" string is empty, there are NO parameters.
+            if (string.IsNullOrEmpty(combinedText)) return Array.Empty<object>();
+
+            // Finally, split again by commas.
+            object[] result = combinedText.Split(",");
+
+            // Return the result, but before that, convert the value for each string.
+            return result.Select(obj => obj = GetValue(obj.ToString())).ToArray();
+        }
+
+        public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters)
+        {
+            return ExecuteCommand(commandType, parameters, out object? result);
+        }
+        // Executes the specified built-in command.
+        public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters, out object? result)
+        {
+            // FUNC, ENDFUNC, ELSE and ENDIF aren´t here because they are managed in the ExecuteLine method.
+            switch (commandType)
+            {
+                case BuiltInCommand.IMPORT:
+                    result = null;
+                    return BuiltInCommands.Import(commandType, parameters);
+
+                case BuiltInCommand.VAR:
+                    result = null;
+                    return BuiltInCommands.Var(commandType, parameters);
+
+                case BuiltInCommand.RETURN:
+                    return BuiltInCommands.Return(commandType, parameters, out result);
+
+                case BuiltInCommand.IF:
+                    result = null;
+                    return BuiltInCommands.If(commandType, parameters);
+
+                case BuiltInCommand.ELSEIF:
+                    result = null;
+                    return BuiltInCommands.ElseIf(commandType, parameters);
+            }
+
+            result = null;
+            return false;
+        }
+        #endregion
+
+        #region Functions
+        // Gets the specified function's name.
+        public static string GetFunction(string commandLine, bool skipErrors = false)
+        {
+            // Gets the parenthesis indexes.
+            int parenthesisIndex = commandLine.IndexOf('(');
+            int parenthesis2Index = commandLine.LastIndexOf(')');
+
+            // A function ALWAYS contains the TWO parenthesis.
+            if (parenthesisIndex == -1 || parenthesis2Index == -1)
+            {
+                if (!skipErrors) ExceptionsManager.NoFunctionParenthesisFound(commandLine);
+                return "";
+            }
+
+            // Return the function without the parenthesis.
+            string command = commandLine.Substring(0, parenthesisIndex).Trim();
+            return command;
+        }
+
+        // Gets the specified function's parameters.
+        public static object[] GetFunctionParameters(string commandLine, bool isFromACustomFunction = false)
+        {
+            // Gets the parenthesis indexes.
+            List<object> parameters = new List<object>();
+            int firstIndex = commandLine.IndexOf('(');
+            int secondIndex = commandLine.LastIndexOf(')');
+
+            // A function ALWAYS contains the TWO parenthesis.
+            if (firstIndex == -1 || secondIndex == -1)
+            {
+                return null;
+            }
+
+            // Get all the content inside of the parenthesis, remove whitespaces and split by commas.
+            string[] splitedParameters = commandLine.Substring(firstIndex + 1, secondIndex - firstIndex - 1).RemoveWhitespaces().Split(',');
+
+            // Foreach parameter, get it's real value.
+            foreach (string parameter in splitedParameters)
+            {
+                //string toAdd = parameter.Substring(0, parameter.Length - 2);
+                if (!string.IsNullOrEmpty(parameter) && !isFromACustomFunction) parameters.Add(GetValue(parameter));
+                if (!string.IsNullOrEmpty(parameter) && isFromACustomFunction) parameters.Add(parameter);
+            }
+
+            // Do I really need to explain what this thing does? LOL
+            return parameters.ToArray();
+        }
+
+        // Executes the specified function.
+        public static bool ExecuteFunction(string function, object[] parameters)
+        {
+            return ExecuteFunction(function, parameters, out object? result);
+        }
+        public static bool ExecuteFunction(string function, object[] parameters, out object? result, bool skipErrors = false)
+        {
+            result = null;
+
+            // First check if the function is a custom one, if that's the case, this should be true.
+            if (Init.customFunctions.Any(func => func.name == function && func.parameters.Count == parameters.Length))
+            {
+                // Get the function.
+                CustomFunction func = Init.customFunctions.Find(func => func.name == function);
+
+                // First iterate foreach parameter and add them add them a new variable.
+                for (int i = 0; i < func.parameters.Count; i++)
+                {
+                    Init.variables.Add(func.parameters[i], parameters[i]);
+                }
+
+                // Foreach line inside of the function block, execute the commands or functions.
+                int currentLineBeforeExecution = Init.currentLine;
+                for (int i = func.startIndex + 1; i < Init.fileLines.Length; i++)
+                {
+                    Init.currentLine = i + 1;
+                    if (Init.fileLines[i] == "EndFunc") break;
+                    if (ExecuteLine(Init.fileLines[i].Trim(), out object? customFuncResult, true))
+                    {
+                        if (ItsABuiltInCommand(Init.fileLines[i].Trim()))
+                        {
+                            if (GetBuiltItCommand(Init.fileLines[i].Trim()) == BuiltInCommand.RETURN)
+                            {
+                                result = customFuncResult;
+                            }
+                        }
+                    }
+                }
+
+                Init.currentLine = currentLineBeforeExecution;
+
+                // Delete the function's variables.
+                for (int i = 0; i < func.parameters.Count; i++)
+                {
+                    Init.variables.Remove(func.parameters[i]);
+                }
+
+                // The function was executed successfully.
+                return true;
+            }
+
+            // If not, check in the built-in libraries that are LOADED.
+            foreach (Library library in Init.loadedLibraries)
+            {
+                // If there's a library that contains the specified function WITH THE FULL NAME.
+                if (library.avaiableFunctions.Contains(function))
+                {
+                    return library.ExecuteFunction(function, parameters, out result); // Execute it.
+                }
+                // If there's a library that contains the specified function WITH THE SHORT NAME.
+                else if (library.avaiableFunctions.Any(str => str.Substring(str.IndexOf('.') + 1) == function))
+                {
+                    return library.ExecuteFunction(function, parameters, out result); // Execute it.
+                }
+            }
+
+            // If nothing works, throw an error and return false.
+            if (!skipErrors) ExceptionsManager.FunctionNotFound(function);
+
+            result = null;
+            return false;
+        }
+
+        public static void CreateCustomFunction(string line, int currentLine)
+        {
+            // If the line is null of empty, skip it.
+            if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return;
+
+            // If it's a built-in command.
+            if (ItsABuiltInCommand(line))
+            {
+                // Get the Built-In command.
+                BuiltInCommand command = GetBuiltItCommand(line);
+
+                if (command == BuiltInCommand.FUNC) // This means the command is the start of a custom function.
+                {
+                    if (Init.ifBlocks.Count > 0) // You can't write functions inside of an if block.
+                    {
+                        ExceptionsManager.CantDefineFunctionsInsideOfBlock("If");
+                        return;
+                    }
+                    if (Init.insideOfAFunctionBlock) // To begin a new function you need to close the last one first, lol.
+                    {
+                        ExceptionsManager.FunctionDetectedBeforeClosingTheLastOne();
+                        return;
+                    }
+
+                    Init.insideOfAFunctionBlock = true;
+
+                    // Extract all the function info.
+                    string funcNameWithParenthesis = GetBuiltInCommandParameters(line)[0].ToString();
+                    funcName = GetFunction(funcNameWithParenthesis);
+                    if (!Utilities.ValidFunctionName(funcName)) // If the function name isn't a valid one, throw an error.
+                    {
+                        ExceptionsManager.InvalidFunctionName(funcName);
+                        funcName = "";
+                        Init.insideOfAFunctionBlock = false;
+                        return;
+                    }
+                    // Also you can't create a new function if it's name has been already used by another one or a variable.
+                    if (Init.variables.ContainsKey(funcName) || Init.customFunctions.Any(func => func.name == funcName))
+                    {
+                        ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
+                        funcName = "";
+                        Init.insideOfAFunctionBlock = false;
+                        return;
+                    }
+
+                    // Finally, if everything it's fine, create it.
+                    var parameters = GetFunctionParameters(funcNameWithParenthesis, true);
+                    foreach (var parm in parameters) { funcParameters.Add(parm.ToString()); }
+                    funcStartIndex = currentLine;
+                }
+                if (command == BuiltInCommand.RETURN)
+                {
+                    funcReturnsSomething = true; // If the function has a return statement, that means the functions return something.
+                }
+                if (command == BuiltInCommand.ENDFUNC)
+                {
+                    // If this is false that means there is a end block before even starting a new function, that's makes no sense, just do nothing.
+                    if (!Init.insideOfAFunctionBlock)
+                    {
+                        return;
+                    }
+                    // The functions ends here, add the function to the custom functions list with all the extracted info.
+                    Init.insideOfAFunctionBlock = false;
+                    Init.customFunctions.Add(new CustomFunction(funcName, funcParameters, funcStartIndex, funcReturnsSomething));
+                    funcName = "";
+                    funcParameters = new List<string>();
+                    funcStartIndex = 0;
+                }
+                if (command == BuiltInCommand.IF)
+                {
+                    Init.ifBlocks.Push(false);
+                }
+                if (command == BuiltInCommand.ENDIF)
+                {
+                    if (Init.ifBlocks.Count > 0)
+                    {
+                        Init.ifBlocks.Pop();
+                    }
+                    else
+                    {
+                        ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "EndBlock");
+                        return;
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region Main Utilities
         // Try to convert the specified text into a value.
         public static dynamic GetValue(string text)
         {
@@ -75,9 +458,9 @@ namespace Interpreter
             }
 
             // Check if there's a variable with that name.
-            if (Program.variables.ContainsKey(text))
+            if (Init.variables.ContainsKey(text))
             {
-                return Program.variables[text];
+                return Init.variables[text];
             }
 
             // Check if the value can be treated as a IF statement.
@@ -110,13 +493,15 @@ namespace Interpreter
         // Tries to resolve the specified text as a aritmetical operation.
         public static object AritmeticOperationOrConcatenation(string text)
         {
+            #region Should we execute this thing?
             // Check if should execute or not.
             bool execute = false;
             foreach (char c in text)
             {
-                if (IsOperator(c)) execute = true;
+                if (Utilities.IsOperator(c)) execute = true;
             }
             if (!execute) return null;
+            #endregion
 
             #region Tokenize
             // Create the "tokens"
@@ -126,7 +511,7 @@ namespace Interpreter
             for (int i = 0; i < text.Length; i++)
             {
                 char c = text[i];
-                if (IsOperator(c) || c == '(' || c == ')')
+                if (Utilities.IsOperator(c) || c == '(' || c == ')')
                 {
                     tokens.Add(currentToken);
                     currentToken = "";
@@ -142,7 +527,9 @@ namespace Interpreter
             {
                 tokens.Add(currentToken);
             }
+            #endregion
 
+            #region Solve Parenthesis First
             // If there are any parenthesis inside, solve them first.
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -174,7 +561,7 @@ namespace Interpreter
             {
                 if (string.IsNullOrEmpty(tokens[i])) continue;
 
-                if (IsOperator(tokens[i].ToCharArray()[0]))
+                if (Utilities.IsOperator(tokens[i].ToCharArray()[0]))
                 {
                     if (tokens[i] == "+")
                     {
@@ -208,13 +595,10 @@ namespace Interpreter
             // Finally, return the obtained result.
             return finalResult;
         }
-        // Just check if the specified char is an operator LOL.
-        static bool IsOperator(char ch)
-        {
-            return ch == '+' || ch == '-' || ch == '/' || ch == '*';
-        }
+        #endregion
 
         #region Bool Operators
+        // Tries to convert a command into a boolean expression.
         public static bool BoolOperator(string commandLine, out bool result)
         {
             result = false;
@@ -238,7 +622,6 @@ namespace Interpreter
                 return false;
             }
         }
-
         static string GetOperator(string text, int operatorIndex)
         {
             if (operatorIndex != -1)
@@ -258,7 +641,6 @@ namespace Interpreter
             }
             return "";
         }
-
         static bool Evaluate(string leftExpression, string @operator, string rightOperator)
         {
             switch (@operator)
@@ -328,6 +710,7 @@ namespace Interpreter
         }
         #endregion
 
+        #region Actions
         // Tries the specified command as an assigment one. 
         public static bool TryToAssign(string commandLine)
         {
@@ -344,9 +727,9 @@ namespace Interpreter
             string newValue = splited[1];
 
             // This only will work if the specified variable already exists and it's defined.
-            if (Program.variables.ContainsKey(variableName))
+            if (Init.variables.ContainsKey(variableName))
             {
-                Program.variables[variableName] = GetValue(newValue);
+                Init.variables[variableName] = GetValue(newValue);
                 return true;
             }
             else // Else, throw an error.
@@ -422,238 +805,26 @@ namespace Interpreter
             result = finalResult;
             return true;
         }
+        #endregion
 
-        // Gets the built-in command.
-        public static BuiltInCommand GetBuiltItCommand(string commandLine)
+        public static void AfterFirstReadCheck()
         {
-            // Splits the command into spaces.
-            string[] splited = commandLine.SplitWithSpaces();
-
-            // Try to parse the first element (the command itself) to the enum.
-            if (Enum.TryParse(typeof(BuiltInCommand), splited[0].Trim(), true, out object? result))
+            // If the If Blocks count is greater than 0, that means an If block wasn't closed before reaching the end of the file.
+            if (Init.ifBlocks.Count > 0)
             {
-                return (BuiltInCommand)result;
+                ExceptionsManager.BlockNotClosed("If");
             }
-            else
+            // If true that means no EndFunc code was reached. Throw an error.
+            if (Init.insideOfAFunctionBlock)
             {
-                ExceptionsManager.BuiltInCommandNotFound(splited[0]);
-                return default;
-            }
-        }
-        // Gets the built-in command parameters.
-        public static object[] GetBuiltInCommandParameters(string commandLine)
-        {
-            // Splits into spaces, then skips the first element.
-            object[] temp1 = commandLine.SplitWithSpaces().Skip(1).ToArray();
-            // Combine all this into a simple string.
-            string temp2 = string.Join("", temp1);
-            // If the temp2 string is empty, there are NO parameters.
-            if (string.IsNullOrEmpty(temp2)) return Array.Empty<object>();
-            // Finally, split again by commas.
-            object[] result = temp2.Split(",");
-
-            // Return the result, but before that, convert the value for each string.
-            return result.Select(obj => obj = GetValue(obj.ToString())).ToArray();
-        }
-        public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters)
-        {
-            return ExecuteCommand(commandType, parameters, out object? result);
-        }
-        // Executes the specified built-in command.
-        public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters, out object? result)
-        {
-            // FUNC, ENDFUNC, ELSE and ENDIF aren´t here because they are managed in the Program class.
-            switch (commandType)
-            {
-                case BuiltInCommand.IMPORT:
-                    if (parameters.Length != 1)
-                    {
-                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
-                        break;
-                    }
-
-                    if (integratedLibraries.ContainsKey(parameters[0].ToString()))
-                    {
-#pragma warning disable CS8600
-                        string realLibraryClassName = integratedLibraries[parameters[0].ToString()];
-                        Program.loadedLibraries.Add((Library)Utilities.CreateInstance(realLibraryClassName));
-                    }
-                    else
-                    {
-                        ExceptionsManager.LibraryNotFound(parameters[0].ToString());
-                        break;
-                    }
-                    result = null;
-                    return true;
-
-                case BuiltInCommand.VAR:
-                    if (parameters.Length != 2)
-                    {
-                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
-                        break;
-                    }
-                    string funcName = parameters[0].ToString();
-                    if (Program.variables.ContainsKey(funcName) || Program.customFunctions.Any(func => func.name == funcName))
-                    {
-                        ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
-                        break;
-                    }
-                    Program.variables.Add(parameters[0].ToString(), parameters[1]);
-                    result = null;
-                    return true;
-
-                case BuiltInCommand.RETURN:
-                    if (parameters.Length > 1)
-                    {
-                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
-                        break;
-                    }
-                    result = parameters[0];
-                    return true;
-
-                case BuiltInCommand.IF:
-                    if (parameters.Length > 1)
-                    {
-                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
-                        break;
-                    }
-                    Program.ifBlocks.Push((bool)parameters[0]);
-                    result = null;
-                    return true;
-
-                case BuiltInCommand.ELSEIF:
-                    if (parameters.Length > 1)
-                    {
-                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
-                        break;
-                    }
-                    bool oldIfBlock = Program.ifBlocks.Pop();
-                    Program.ifBlocks.Push((bool)parameters[0] && !oldIfBlock);
-                    result = null;
-                    return true;
-            }
-            
-            result = null;
-            return false;
-        }
-
-        // Gets the specified function's name.
-        public static string GetFunction(string commandLine, bool skipErrors = false)
-        {
-            // Gets the parenthesis indexes.
-            int parenthesisIndex = commandLine.IndexOf('(');
-            int parenthesis2Index = commandLine.LastIndexOf(')');
-            // A function ALWAYS contains the TWO parenthesis.
-            if (parenthesisIndex == -1 || parenthesis2Index == -1)
-            {
-                if (!skipErrors) ExceptionsManager.NoFunctionParenthesisFound(commandLine);
-                return "";
+                ExceptionsManager.FunctionsWasntClosed(funcName);
+                //customFunctions.Remove(customFunctions.Last());
             }
 
-            // Return the function without the parenthesis.
-            string command = commandLine.Substring(0, parenthesisIndex).Trim();
-            return command;
-        }
-        // Gets the specified function's parameters.
-        public static object[] GetFunctionParameters(string commandLine, bool isFromACustomFunction = false)
-        {
-            // Gets the parenthesis indexes.
-            List<object> parameters = new List<object>();
-            int firstIndex = commandLine.IndexOf('(');
-            int secondIndex = commandLine.LastIndexOf(')');
-            // A function ALWAYS contains the TWO parenthesis.
-            if (firstIndex == -1 || secondIndex == -1)
-            {
-                return null;
-            }
-
-            // Get all the content inside of the parenthesis, remove whitespaces and split by commas.
-            string[] splitedParameters = commandLine.Substring(firstIndex + 1, secondIndex - firstIndex - 1).RemoveWhitespaces().Split(',');
-            // Foreach parameter, get it's real value.
-            foreach (string parameter in splitedParameters)
-            {
-                //string toAdd = parameter.Substring(0, parameter.Length - 2);
-                if (!string.IsNullOrEmpty(parameter) && !isFromACustomFunction) parameters.Add(GetValue(parameter));
-                if (!string.IsNullOrEmpty(parameter) && isFromACustomFunction) parameters.Add(parameter);
-            }
-
-            // Do I really need to explain what this thing does? LOL
-            return parameters.ToArray();
-        }
-        public static bool ExecuteFunction(string function, object[] parameters)
-        {
-            return ExecuteFunction(function, parameters, out object? result);
-        }
-        // Executes the specified function.
-        public static bool ExecuteFunction(string function, object[] parameters, out object? result, bool skipErrors = false)
-        {
-            result = null;
-
-            // First check if the function is a custom one, if that's the case, this should be true.
-            if (Program.customFunctions.Any(func => func.name == function && func.parameters.Count == parameters.Length))
-            {
-                // Get the function.
-                CustomFunction func = Program.customFunctions.Find(func => func.name == function);
-
-                // First iterate foreach parameter and add them as a new variable.
-                for (int i = 0; i < func.parameters.Count; i++)
-                {
-                    Program.variables.Add(func.parameters[i], parameters[i]);
-                }
-
-                // Foreach line inside of the function block, execute the commands.
-                int currentLineBeforeExecution = Program.currentLine;
-
-                for (int i = func.startIndex + 1; i < Program.fileLines.Length; i++)
-                {
-                    Program.currentLine = i + 1;
-                    if (Program.fileLines[i] == "EndFunc") break;
-                    if (Program.ExecuteCommand(Program.fileLines[i].Trim(), out object? customFuncResult, true))
-                    {
-                        if (ItsABuiltInCommand(Program.fileLines[i].Trim()))
-                        {
-                            if (GetBuiltItCommand(Program.fileLines[i].Trim()) == BuiltInCommand.RETURN)
-                            {
-                                result = customFuncResult;
-                            }
-                        }
-                    }
-                }
-
-                Program.currentLine = currentLineBeforeExecution;
-
-                // Delete the functions variables.
-                for (int i = 0; i < func.parameters.Count; i++)
-                {
-                    Program.variables.Remove(func.parameters[i]);
-                }
-
-                // The function was executed successfully.
-                //result = null;
-                return true;
-            }
-
-            // If not, check in the built-in libraries that are LOADED.
-            foreach (Library library in Program.loadedLibraries)
-            {
-                if (library.avaiableFunctions.Contains(function)) // If there's a library that contains the specified function WITH THE FULL NAME.
-                {
-                    bool temp = library.ExecuteFunction(function, parameters, out result);
-                    return temp; // Execute it.
-                }
-                // If there's a library that contains the specified function WITH THE SHORT NAME.
-                else if (library.avaiableFunctions.Any(str => str.Substring(str.IndexOf('.') + 1) == function))
-                {
-                    bool temp = library.ExecuteFunction(function, parameters, out result);
-                    return temp; // Execute it.
-                }
-            }
-
-            // If nothing works, throw an error and return false.
-            if (!skipErrors) ExceptionsManager.FunctionNotFound(function);
-
-            result = null;
-            return false;
+            // Resset this.
+            Init.currentLine = 0;
+            Init.insideOfAFunctionBlock = false;
+            Init.ifBlocks = new Stack<bool>();
         }
     }
 }

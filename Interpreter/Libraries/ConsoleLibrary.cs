@@ -128,7 +128,7 @@ namespace Interpreter.Libraries
         #region Console Exceptions
         public void ColorNotFound(string color)
         {
-            ExceptionsManager.PrintError(Program.currentLine, $"The \"{color}\" color wasn't found!");
+            ExceptionsManager.PrintError(Init.currentLine, $"The \"{color}\" color wasn't found!");
         }
         #endregion
     }
