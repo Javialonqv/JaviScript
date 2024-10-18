@@ -34,12 +34,13 @@ namespace Interpreter.Libraries
                     return true;
 
                 case "printl":
-                    if (parameters.Length != 1)
+                    if (parameters.Length > 1)
                     {
                         ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
                         break;
                     }
-                    Print(parameters[0], true);
+                    if (parameters.Length == 1) { Print(parameters[0], true); }
+                    if (parameters.Length == 0) { Print("", true); }
                     result = null;
                     return true;
 
