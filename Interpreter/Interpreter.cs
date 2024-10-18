@@ -39,7 +39,7 @@ namespace Interpreter
         {
             string[] splited = commandLine.SplitWithSpaces();
 
-            return Enum.TryParse(typeof(BuiltInCommand), splited[0], true, out object? result);
+            return Enum.TryParse(typeof(BuiltInCommand), splited[0].Trim(), true, out object? result);
         }
 
         // Try to convert the specified text into a value.
@@ -428,7 +428,7 @@ namespace Interpreter
             string[] splited = commandLine.SplitWithSpaces();
 
             // Try to parse the first element (the command itself) to the enum.
-            if (Enum.TryParse(typeof(BuiltInCommand), splited[0], true, out object? result))
+            if (Enum.TryParse(typeof(BuiltInCommand), splited[0].Trim(), true, out object? result))
             {
                 return (BuiltInCommand)result;
             }
@@ -581,17 +581,25 @@ namespace Interpreter
                 }
 
                 // Foreach line inside of the function block, execute the commands.
+                int currentLineBeforeExecution = Program.currentLine;
+
                 for (int i = func.startIndex + 1; i < Program.fileLines.Length; i++)
                 {
+                    Program.currentLine = i + 1;
                     if (Program.fileLines[i] == "EndFunc") break;
-                    if (Program.ExecuteCommand(Program.fileLines[i], out object? customFuncResult, true))
+                    if (Program.ExecuteCommand(Program.fileLines[i].Trim(), out object? customFuncResult, true))
                     {
-                        if (GetBuiltItCommand(Program.fileLines[i]) == BuiltInCommand.RETURN)
+                        if (ItsABuiltInCommand(Program.fileLines[i].Trim()))
                         {
-                            result = customFuncResult;
+                            if (GetBuiltItCommand(Program.fileLines[i].Trim()) == BuiltInCommand.RETURN)
+                            {
+                                result = customFuncResult;
+                            }
                         }
                     }
                 }
+
+                Program.currentLine = currentLineBeforeExecution;
 
                 // Delete the functions variables.
                 for (int i = 0; i < func.parameters.Count; i++)

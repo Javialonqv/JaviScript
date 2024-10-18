@@ -142,6 +142,8 @@ namespace Interpreter
         {
             result = null;
 
+            if (line.StartsWith("# ")) return false;
+
             if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return false; // If the line is null of empty, skip it.
 
             // If it's a built-in command.
