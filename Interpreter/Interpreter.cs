@@ -22,6 +22,7 @@ namespace Interpreter
         RETURN,
         ENDFUNC,
         IF,
+        ELSE,
         ENDIF
     }
 
@@ -445,6 +446,8 @@ namespace Interpreter
             object[] temp1 = commandLine.SplitWithSpaces().Skip(1).ToArray();
             // Combine all this into a simple string.
             string temp2 = string.Join("", temp1);
+            // If the temp2 string is empty, there are NO parameters.
+            if (string.IsNullOrEmpty(temp2)) return Array.Empty<object>();
             // Finally, split again by commas.
             object[] result = temp2.Split(",");
 
@@ -458,7 +461,7 @@ namespace Interpreter
         // Executes the specified built-in command.
         public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters, out object? result)
         {
-            // FUNC and ENDFUNC aren´t here because they are managed in the Program class.
+            // FUNC, ENDFUNC, ELSE and ENDIF aren´t here because they are managed in the Program class.
             switch (commandType)
             {
                 case BuiltInCommand.IMPORT:

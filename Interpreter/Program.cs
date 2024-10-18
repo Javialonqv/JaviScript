@@ -15,6 +15,7 @@ namespace Interpreter
         public static List<CustomFunction> customFunctions = new List<CustomFunction>();
         public static Dictionary<string, object> variables = new Dictionary<string, object>();
         public static Stack<bool> ifBlocks = new Stack<bool>();
+        public static bool inAnElseStatement;
 
         [STAThread]
         static void Main(string[] args)
@@ -180,15 +181,22 @@ namespace Interpreter
             {
                 BuiltInCommand command = Interpreter.GetBuiltItCommand(line);
 
+                // If the command is Else.
+                if (command == BuiltInCommand.ELSE)
+                {
+                    if (ifBlocks.Count > 0) { inAnElseStatement = true; }
+                    else { ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "Else"); }
+                }
                 // If the commmand is EndIf, remove the last If code block.
                 if (command == BuiltInCommand.ENDIF)
                 {
-                    ifBlocks.Pop();
+                    if (ifBlocks.Count > 0) ifBlocks.Pop();
+                    inAnElseStatement = false;
                 }
                 // First check if it's inside of a IF block, if that's the case, check if this code should be executed.
                 if (ifBlocks.Count > 0)
                 {
-                    if (!ifBlocks.Peek())
+                    if ((!ifBlocks.Peek() && !inAnElseStatement) || (ifBlocks.Peek() && inAnElseStatement))
                     {
                         return false;
                     }
@@ -216,7 +224,7 @@ namespace Interpreter
                 // First check if it's inside of a IF block, if that's the case, check if this code should be executed.
                 if (ifBlocks.Count > 0)
                 {
-                    if (!ifBlocks.Peek())
+                    if ((!ifBlocks.Peek() && !inAnElseStatement) || (ifBlocks.Peek() && inAnElseStatement))
                     {
                         return false;
                     }
