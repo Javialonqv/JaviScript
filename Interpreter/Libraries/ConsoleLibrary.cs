@@ -12,8 +12,8 @@ namespace Interpreter.Libraries
         {
             avaiableFunctions = new List<string>()
             {
-                "pause",
-                "input"
+                "console.pause",
+                "console.input"
             };
         }
 
@@ -21,6 +21,7 @@ namespace Interpreter.Libraries
         {
             switch (command)
             {
+                case "console.pause":
                 case "pause":
                     if (parameters.Length > 1)
                     {
@@ -33,6 +34,7 @@ namespace Interpreter.Libraries
                     result = null;
                     return true;
 
+                case "console.input":
                 case "input":
                     if (parameters.Length != 0)
                     {

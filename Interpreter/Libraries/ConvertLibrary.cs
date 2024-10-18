@@ -12,9 +12,9 @@ namespace Interpreter.Libraries
         {
             avaiableFunctions = new List<string>()
             {
-                "int",
-                "str",
-                "float"
+                "convert.int",
+                "convert.str",
+                "convert.float"
             };
         }
 
@@ -22,6 +22,7 @@ namespace Interpreter.Libraries
         {
             switch (command)
             {
+                case "convert.int":
                 case "int":
                     if (parameters.Length != 1)
                     {
@@ -31,6 +32,7 @@ namespace Interpreter.Libraries
                     result = ConvertToInt(parameters[0]);
                     return true;
 
+                case "convert.str":
                 case "str":
                     if (parameters.Length != 1)
                     {
@@ -40,6 +42,7 @@ namespace Interpreter.Libraries
                     result = ConvertToString(parameters[0]);
                     return true;
 
+                case "convert.float":
                 case "float":
                     if (parameters.Length != 1)
                     {

@@ -9,6 +9,7 @@ namespace Interpreter
     internal static class Utilities
     {
         const string validCharacters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+
         public static string[] SplitWithSpaces(this string text)
         {
             string[]? splited = null;
@@ -60,7 +61,7 @@ namespace Interpreter
 
         public static bool ValidFunctionName(string functionName)
         {
-            functionName = functionName.ToLower();
+            functionName = functionName.ToUpper();
 
             foreach (char c in functionName)
             {

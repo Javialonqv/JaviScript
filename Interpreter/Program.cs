@@ -75,7 +75,7 @@ namespace Interpreter
                         // Extract all the function info.
                         string funcNameWithParenthesis = Interpreter.GetBuiltInCommandParameters(line)[0].ToString();
                         funcName = Interpreter.GetFunction(funcNameWithParenthesis);
-                        if (!Utilities.ValidFunctionName(funcName))
+                        if (!Utilities.ValidFunctionName(funcName)) // If the function name isn't a valid one, throw an error.
                         {
                             ExceptionsManager.InvalidFunctionName(funcName);
                             funcName = "";
@@ -89,11 +89,12 @@ namespace Interpreter
                     }
                     if (command == BuiltInCommand.ENDFUNC)
                     {
-                        // The functions ends here, add the function to the custom functions list with all the extracted info.
+                        // If this is false that means there is a end block before even starting a new function, that's makes no sense, just do nothing.
                         if (!insideOfAFunctionBlock)
                         {
                             continue;
                         }
+                        // The functions ends here, add the function to the custom functions list with all the extracted info.
                         insideOfAFunctionBlock = false;
                         customFunctions.Add(new CustomFunction(funcName, funcParameters, funcStartIndex, false));
                         funcName = "";

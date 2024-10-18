@@ -13,9 +13,9 @@ namespace Interpreter.Libraries
         {
             avaiableFunctions = new ()
             {
-                "print",
-                "printl",
-                "exit"
+                "main.print",
+                "main.printl",
+                "main.exit"
             };
         }
 
@@ -23,6 +23,7 @@ namespace Interpreter.Libraries
         {
             switch (command)
             {
+                case "main.print":
                 case "print":
                     if (parameters.Length != 1)
                     {
@@ -33,6 +34,7 @@ namespace Interpreter.Libraries
                     result = null;
                     return true;
 
+                case "main.printl":
                 case "printl":
                     if (parameters.Length > 1)
                     {
@@ -44,6 +46,7 @@ namespace Interpreter.Libraries
                     result = null;
                     return true;
 
+                case "main.exit":
                 case "exit":
                     if (parameters.Length > 1)
                     {

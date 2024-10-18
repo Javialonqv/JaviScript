@@ -379,9 +379,16 @@ namespace Interpreter
             // If not, check in the built-in libraries that are LOADED.
             foreach (Library library in Program.loadedLibraries)
             {
-                if (library.avaiableFunctions.Contains(function)) // If there's a library that contains the specified function.
+                if (library.avaiableFunctions.Contains(function)) // If there's a library that contains the specified function WITH THE FULL NAME.
                 {
-                    return library.ExecuteFunction(function, parameters, out result); // Execute it.
+                    bool temp = library.ExecuteFunction(function, parameters, out result);
+                    return temp; // Execute it.
+                }
+                // If there's a library that contains the specified function WITH THE SHORT NAME.
+                else if (library.avaiableFunctions.Any(str => str.Substring(str.IndexOf('.') + 1) == function))
+                {
+                    bool temp = library.ExecuteFunction(function, parameters, out result);
+                    return temp; // Execute it.
                 }
             }
 
