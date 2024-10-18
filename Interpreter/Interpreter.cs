@@ -20,7 +20,9 @@ namespace Interpreter
         VAR,
         FUNC,
         RETURN,
-        ENDFUNC
+        ENDFUNC,
+        IF,
+        ENDIF
     }
 
     internal class Interpreter
@@ -49,10 +51,6 @@ namespace Interpreter
                 return null;
             }
 
-            // Try to check if it's an aritmetical operation.
-            object aritmeticOperationResult = AritmeticOperationOrConcatenation(text);
-            if (aritmeticOperationResult != null) return aritmeticOperationResult;
-
             // If it's a string.
             if (text.StartsWith("\"") && text.EndsWith("\""))
             {
@@ -74,18 +72,34 @@ namespace Interpreter
                 }
             }
 
+            // Check if there's a variable with that name.
+            if (Program.variables.ContainsKey(text))
+            {
+                return Program.variables[text];
+            }
+
+            // Check if the value can be treated as a IF statement.
+            if (EvaluateIfStatement(text, out bool ifResult))
+            {
+                return ifResult;
+            }
+
+            // Check if the value can be parsed to a bool operation.
+            if (BoolOperator(text, out bool boolResult))
+            {
+                return boolResult;
+            }
+
+            // Try to check if it's an aritmetical operation.
+            object aritmeticOperationResult = AritmeticOperationOrConcatenation(text);
+            if (aritmeticOperationResult != null) return aritmeticOperationResult;
+
             // If by any chance it's a function itself.
             string funcName = GetFunction(text, true);
             object[] funcParameters = GetFunctionParameters(text);
             if (ExecuteFunction(funcName, funcParameters, out object? result, true))
             {
                 return result;
-            }
-
-            // Check if there's a variable with that name.
-            if (Program.variables.ContainsKey(text))
-            {
-                return Program.variables[text];
             }
 
             // If nothing works, just return the same text WITHOUT modifications.
@@ -198,14 +212,129 @@ namespace Interpreter
             return ch == '+' || ch == '-' || ch == '/' || ch == '*';
         }
 
+        #region Bool Operators
+        public static bool BoolOperator(string commandLine, out bool result)
+        {
+            result = false;
+            try
+            {
+                if (commandLine.Contains("AND") || commandLine.Contains("OR")) return false;
+
+                int operatorIndex = commandLine.IndexOfAny(new char[] { '=', '!', '<', '>' });
+
+                string @operator = GetOperator(commandLine, operatorIndex);
+
+                string leftExpression = commandLine.Substring(0, operatorIndex).Trim();
+                string rightExpression = commandLine.Substring(operatorIndex + @operator.Length).Trim();
+
+                result = Evaluate(leftExpression, @operator, rightExpression);
+                return true;
+            }
+            catch
+            {
+                result = false;
+                return false;
+            }
+        }
+
+        static string GetOperator(string text, int operatorIndex)
+        {
+            if (operatorIndex != -1)
+            {
+                if (text[operatorIndex] == '=' || text[operatorIndex] == '!')
+                {
+                    if (text[operatorIndex + 1] == '=')
+                        return text.Substring(operatorIndex, 2); // "==" or "!="
+                }
+                else if (text[operatorIndex] == '<' || text[operatorIndex] == '>')
+                {
+                    if (operatorIndex + 1 < text.Length && text[operatorIndex + 1] == '=')
+                        return text.Substring(operatorIndex, 2); // "<=" or ">="
+                    else
+                        return text.Substring(operatorIndex, 1); // "<" or ">"
+                }
+            }
+            return "";
+        }
+
+        static bool Evaluate(string leftExpression, string @operator, string rightOperator)
+        {
+            switch (@operator)
+            {
+                case "==":
+                    try
+                    {
+                        return GetValue(leftExpression) == GetValue(rightOperator);
+                    }
+                    catch
+                    {
+                        ExceptionsManager.InvalidOperation("==", GetValue(leftExpression).GetType().Name, GetValue(rightOperator).GetType().Name);
+                        return false;
+                    }
+                case "!=":
+                    try
+                    {
+                        return GetValue(leftExpression) != GetValue(rightOperator);
+                    }
+                    catch
+                    {
+                        ExceptionsManager.InvalidOperation("!=", GetValue(leftExpression).GetType().Name, GetValue(rightOperator).GetType().Name);
+                        return false;
+                    }
+                case "<":
+                    try
+                    {
+                        return GetValue(leftExpression) < GetValue(rightOperator);
+                    }
+                    catch
+                    {
+                        ExceptionsManager.InvalidOperation("<", GetValue(leftExpression).GetType().Name, GetValue(rightOperator).GetType().Name);
+                        return false;
+                    }
+                case ">":
+                    try
+                    {
+                        return GetValue(leftExpression) > GetValue(rightOperator);
+                    }
+                    catch
+                    {
+                        ExceptionsManager.InvalidOperation(">", GetValue(leftExpression).GetType().Name, GetValue(rightOperator).GetType().Name);
+                        return false;
+                    }
+                case "<=":
+                    try
+                    {
+                        return GetValue(leftExpression) <= GetValue(rightOperator);
+                    }
+                    catch
+                    {
+                        ExceptionsManager.InvalidOperation("<=", GetValue(leftExpression).GetType().Name, GetValue(rightOperator).GetType().Name);
+                        return false;
+                    }
+                case ">=":
+                    try
+                    {
+                        return GetValue(leftExpression) >= GetValue(rightOperator);
+                    }
+                    catch
+                    {
+                        ExceptionsManager.InvalidOperation(">=", GetValue(leftExpression).GetType().Name, GetValue(rightOperator).GetType().Name);
+                        return false;
+                    }
+            }
+            return false;
+        }
+        #endregion
+
         // Tries the specified command as an assigment one. 
         public static bool TryToAssign(string commandLine)
         {
             // Remove all the whitespaces in the command.
             commandLine = commandLine.RemoveWhitespaces();
 
-            // The assigment commands ALWAYS have an equals character, ONLY ONE.
-            if (commandLine.Count(ch => ch == '=') != 1) return false;
+            // The assigment commands ALWAYS have an equals character, ONLY ONE and NO OTHER OPERATORS.
+            if (commandLine.Count(ch => ch == '=') != 1 || commandLine.Count(ch => ch == '<') > 0 || commandLine.Count(ch => ch == '<') > 0 ||
+                commandLine.Count(ch => ch == '!') > 0) return false;
             string[] splited = commandLine.Split('=');
 
             // Get the variable name and the new value.
@@ -224,6 +353,74 @@ namespace Interpreter
                 return false;
             }
         }
+        public static bool EvaluateIfStatement(string text, out bool result)
+        {
+            result = false;
+            string pattern = @"(AND|OR)";
+
+            var splited = Regex.Split(text, pattern);
+
+            var tokens = new List<string>();
+            foreach (var item in splited)
+            {
+                if (!string.IsNullOrWhiteSpace(item))
+                {
+                    tokens.Add(item);
+                }
+            }
+
+            if (!tokens.Contains("AND") && !tokens.Contains("OR")) return false;
+
+            // If there are any parenthesis inside, solve them first.
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i] == "(")
+                {
+                    for (int j = tokens.Count - 1; j >= 0; j--)
+                    {
+                        if (tokens[j] == ")")
+                        {
+                            string toPass = string.Join("", tokens.GetRange(i + 1, j - 1 - 3));
+                            object parenthesisResult = AritmeticOperationOrConcatenation(toPass);
+                            tokens.RemoveRange(i, j - i + 1);
+#pragma warning disable CS8604
+                            tokens.Insert(i, parenthesisResult.ToString());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Solve all the operations inside of the final tokens.
+            dynamic? finalResult = null;
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (string.IsNullOrEmpty(tokens[i])) continue;
+
+                if (tokens[i] == "AND" || tokens[i] == "OR")
+                {
+                    if (tokens[i] == "AND")
+                    {
+                        try { finalResult = finalResult && GetValue(tokens[i + 1]); }
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return false; }
+                    }
+                    if (tokens[i] == "OR")
+                    {
+                        try { finalResult = finalResult || GetValue(tokens[i + 1]); }
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return false; }
+                    }
+                    i++;
+                }
+                else
+                {
+                    if (finalResult == null) finalResult = GetValue(tokens[i]);
+                }
+            }
+
+            result = finalResult;
+            return true;
+        }
+
         // Gets the built-in command.
         public static BuiltInCommand GetBuiltItCommand(string commandLine)
         {
@@ -302,6 +499,16 @@ namespace Interpreter
                         break;
                     }
                     result = parameters[0];
+                    return true;
+
+                case BuiltInCommand.IF:
+                    if (parameters.Length > 1)
+                    {
+                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                        break;
+                    }
+                    Program.ifBlocks.Push((bool)parameters[0]);
+                    result = null;
                     return true;
             }
             

@@ -14,6 +14,7 @@ namespace Interpreter
         public static List<Library> loadedLibraries = new List<Library>();
         public static List<CustomFunction> customFunctions = new List<CustomFunction>();
         public static Dictionary<string, object> variables = new Dictionary<string, object>();
+        public static Stack<bool> ifBlocks = new Stack<bool>();
 
         [STAThread]
         static void Main(string[] args)
@@ -148,6 +149,20 @@ namespace Interpreter
             {
                 BuiltInCommand command = Interpreter.GetBuiltItCommand(line);
 
+                // If the commmand is EndIf, remove the last If code block.
+                if (command == BuiltInCommand.ENDIF)
+                {
+                    ifBlocks.Pop();
+                }
+                // First check if it's inside of a IF block, if that's the case, check if this code should be executed.
+                if (ifBlocks.Count > 0)
+                {
+                    if (!ifBlocks.Peek())
+                    {
+                        return false;
+                    }
+                }
+
                 #region Just to skip the functions keywords
                 if (command == BuiltInCommand.FUNC)
                 {
@@ -167,8 +182,18 @@ namespace Interpreter
             }
             else // It's a function with PARENTHESIS.
             {
+                // First check if it's inside of a IF block, if that's the case, check if this code should be executed.
+                if (ifBlocks.Count > 0)
+                {
+                    if (!ifBlocks.Peek())
+                    {
+                        return false;
+                    }
+                }
+
                 if (insideOfAFunctionBlock && !executeFunc) return false; // If it's inside of a function code block and this time can't execute it, return.
 
+                // First of all, check if the command is an assigment one.
                 if (Interpreter.TryToAssign(line)) return false;
 
                 // Just get the function name and parameters and execute it.
