@@ -13,7 +13,8 @@ namespace Interpreter.Libraries
             avaiableFunctions = new List<string>()
             {
                 "console.pause",
-                "console.input"
+                "console.input",
+                "console.clear",
             };
         }
 
@@ -43,6 +44,18 @@ namespace Interpreter.Libraries
                     }
 
                     result = GetUserInput();
+                    return true;
+
+                case "console.clear":
+                case "clear":
+                    if (parameters.Length > 0)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 0);
+                        break;
+                    }
+                    Console.Clear();
+
+                    result = null;
                     return true;
             }
 

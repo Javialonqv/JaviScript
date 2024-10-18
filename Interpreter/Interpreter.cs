@@ -530,7 +530,7 @@ namespace Interpreter
             }
 
             // Return the function without the parenthesis.
-            string command = commandLine.Substring(0, parenthesisIndex);
+            string command = commandLine.Substring(0, parenthesisIndex).Trim();
             return command;
         }
         // Gets the specified function's parameters.
