@@ -90,6 +90,13 @@ namespace Interpreter
                             insideOfAFunctionBlock = false;
                             continue;
                         }
+                        if (variables.ContainsKey(funcName) || customFunctions.Any(func => func.name == funcName))
+                        {
+                            ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
+                            funcName = "";
+                            insideOfAFunctionBlock = false;
+                            continue;
+                        }
 
                         var parameters = Interpreter.GetFunctionParameters(funcNameWithParenthesis, true);
                         foreach (var parm in parameters) { funcParameters.Add(parm.ToString()); }
@@ -140,8 +147,8 @@ namespace Interpreter
             // If true that means no EndFunc code was reached. Throw an error.
             if (insideOfAFunctionBlock)
             {
-                ExceptionsManager.FunctionsWasntClosed(customFunctions.Last().name);
-                customFunctions.Remove(customFunctions.Last());
+                ExceptionsManager.FunctionsWasntClosed(funcName);
+                //customFunctions.Remove(customFunctions.Last());
             }
 
             // Resset this.

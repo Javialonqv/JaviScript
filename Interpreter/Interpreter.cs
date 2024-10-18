@@ -492,6 +492,12 @@ namespace Interpreter
                         ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
                         break;
                     }
+                    string funcName = parameters[0].ToString();
+                    if (Program.variables.ContainsKey(funcName) || Program.customFunctions.Any(func => func.name == funcName))
+                    {
+                        ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
+                        break;
+                    }
                     Program.variables.Add(parameters[0].ToString(), parameters[1]);
                     result = null;
                     return true;

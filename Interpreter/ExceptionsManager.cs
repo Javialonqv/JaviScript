@@ -76,6 +76,10 @@ namespace Interpreter
         {
             PrintError(Program.currentLine, $"The variable of name \"{variableName}\" it's undefined.");
         }
+        public static void VariableOrFunctionAlreadyDefined(string name)
+        {
+            PrintError(Program.currentLine, $"The variable or function \"{name}\" is already defined.");
+        }
         public static void CantConvertFromTo(object value, string startType, string endType)
         {
             PrintError(Program.currentLine, $"Can't convert \"{value}\" from type \"{startType}\" to type \"{endType}\".");
