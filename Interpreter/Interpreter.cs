@@ -23,6 +23,7 @@ namespace Interpreter
         ENDFUNC,
         IF,
         ELSE,
+        ELSEIF,
         ENDIF
     }
 
@@ -151,7 +152,7 @@ namespace Interpreter
                     {
                         if (tokens[j] == ")")
                         {
-                            string toPass = string.Join("", tokens.GetRange(i + 1, j - 1 - 3));
+                            string toPass = string.Join("", tokens.GetRange(i + 1, j - 4));
                             object result = AritmeticOperationOrConcatenation(toPass);
                             tokens.RemoveRange(i, j - i + 1);
 #pragma warning disable CS8604
@@ -511,6 +512,17 @@ namespace Interpreter
                         break;
                     }
                     Program.ifBlocks.Push((bool)parameters[0]);
+                    result = null;
+                    return true;
+
+                case BuiltInCommand.ELSEIF:
+                    if (parameters.Length > 1)
+                    {
+                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                        break;
+                    }
+                    bool oldIfBlock = Program.ifBlocks.Pop();
+                    Program.ifBlocks.Push((bool)parameters[0] && !oldIfBlock);
                     result = null;
                     return true;
             }

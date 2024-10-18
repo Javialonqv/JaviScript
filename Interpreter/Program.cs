@@ -187,6 +187,14 @@ namespace Interpreter
                     if (ifBlocks.Count > 0) { inAnElseStatement = true; }
                     else { ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "Else"); }
                 }
+                if (command == BuiltInCommand.ELSEIF)
+                {
+                    if (ifBlocks.Count > 0)
+                    {
+                        var elseIfParameters = Interpreter.GetBuiltInCommandParameters(line);
+                        return Interpreter.ExecuteCommand(command, elseIfParameters, out result);
+                    }
+                }
                 // If the commmand is EndIf, remove the last If code block.
                 if (command == BuiltInCommand.ENDIF)
                 {

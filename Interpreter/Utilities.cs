@@ -8,7 +8,7 @@ namespace Interpreter
 {
     internal static class Utilities
     {
-        const string validCharacters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+        public const string validCharacters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
 
         public static string[] SplitWithSpaces(this string text)
         {
