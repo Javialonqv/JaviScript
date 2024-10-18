@@ -27,7 +27,8 @@ namespace Interpreter
         // All the built-in libraries.
         static Dictionary<string, string> integratedLibraries = new Dictionary<string, string>()
         {
-            { "console", "ConsoleLibrary" }
+            { "console", "ConsoleLibrary" },
+            { "convert", "ConvertLibrary" }
         };
 
         // To check if the specified command it's a buit-in one.

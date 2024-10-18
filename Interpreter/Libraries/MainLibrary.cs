@@ -58,7 +58,7 @@ namespace Interpreter.Libraries
                         }
                         else
                         {
-                            ExceptionsManager.InvalidFunctionParameterType(command, 0, parameters[0].GetType().Name, "int");
+                            ExceptionsManager.InvalidFunctionParameterType(command, 0, parameters[0].GetType().Name, "Int");
                         }
                     }
                     if (parameters.Length == 0) { Exit(0); }

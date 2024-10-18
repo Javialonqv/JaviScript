@@ -60,5 +60,9 @@ namespace Interpreter
         {
             PrintError(Program.currentLine, $"The variable of name \"{variableName}\" it's undefined.");
         }
+        public static void CantConvertFromTo(object value, string startType, string endType)
+        {
+            PrintError(Program.currentLine, $"Can't convert \"{value}\" from type \"{startType}\" to type \"{endType}\".");
+        }
     }
 }
