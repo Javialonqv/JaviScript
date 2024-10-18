@@ -16,7 +16,9 @@ namespace Interpreter
     public enum BuiltInCommand
     {
         IMPORT,
-        VAR
+        VAR,
+        FUNC,
+        ENDFUNC
     }
 
     internal class Interpreter
@@ -266,7 +268,7 @@ namespace Interpreter
             string command = commandLine.Substring(0, parenthesisIndex);
             return command;
         }
-        public static object[] GetFunctionParameters(string commandLine)
+        public static object[] GetFunctionParameters(string commandLine, bool isFromACustomFunction = false)
         {
             List<object> parameters = new List<object>();
             int firstIndex = commandLine.IndexOf('(');
@@ -280,7 +282,8 @@ namespace Interpreter
             foreach (string parameter in splitedParameters)
             {
                 //string toAdd = parameter.Substring(0, parameter.Length - 2);
-                if (!string.IsNullOrEmpty(parameter)) parameters.Add(GetValue(parameter));
+                if (!string.IsNullOrEmpty(parameter) && !isFromACustomFunction) parameters.Add(GetValue(parameter));
+                if (!string.IsNullOrEmpty(parameter) && isFromACustomFunction) parameters.Add(parameter);
             }
 
             return parameters.ToArray();
@@ -297,6 +300,30 @@ namespace Interpreter
                 {
                     return library.ExecuteFunction(function, parameters, out result);
                 }
+            }
+
+            if (Program.customFunctions.Any(func => func.name == function && func.parameters.Count == parameters.Length))
+            {
+                CustomFunction func = Program.customFunctions.Find(func => func.name == function);
+
+                for (int i = 0; i < func.parameters.Count; i++)
+                {
+                    Program.variables.Add(func.parameters[i], parameters[i]);
+                }
+
+                for (int i = func.startIndex; i < Program.fileLines.Length; i++)
+                {
+                    if (Program.fileLines[i] == "EndFunc") break;
+                    Program.ExecuteCommand(Program.fileLines[i], true);
+                }
+
+                for (int i = 0; i < func.parameters.Count; i++)
+                {
+                    Program.variables.Remove(func.parameters[i]);
+                }
+
+                result = null;
+                return true;
             }
 
             ExceptionsManager.FunctionNotFound(function);

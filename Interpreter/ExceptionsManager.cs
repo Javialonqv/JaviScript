@@ -39,6 +39,14 @@ namespace Interpreter
         {
             PrintError(Program.currentLine, $"The \"{parameterIndex + 1}\" parameter in the \"{functionName}\" function doesn't take a {givenType} value. Has to be {expectedType}.");
         }
+        public static void FunctionsWasntClosed(string functionName)
+        {
+            PrintError(Program.currentLine, $"The \"{functionName}\" function wasn't closed using \"EndFunc\".");
+        }
+        public static void FunctionDetectedBeforeClosingTheLastOne()
+        {
+            PrintError(Program.currentLine, $"A new function was detected before the last one was closed using \"EndFunc\".");
+        }
 
         public static void InvalidOperation(string @operator, string firstType, string secondType)
         {

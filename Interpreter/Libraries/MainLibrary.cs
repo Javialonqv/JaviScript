@@ -42,6 +42,7 @@ namespace Interpreter.Libraries
                     Print(parameters[0], true);
                     result = null;
                     return true;
+
                 case "exit":
                     if (parameters.Length > 1)
                     {
