@@ -129,6 +129,8 @@ namespace Interpreter
             {
                 if (insideOfAFunctionBlock && !executeFunc) return;
 
+                if (Interpreter.TryToAssign(line)) return;
+
                 string command = Interpreter.GetFunction(line);
                 if (string.IsNullOrEmpty(command)) return;
                 var parameters = Interpreter.GetFunctionParameters(line);

@@ -187,6 +187,25 @@ namespace Interpreter
             return ch == '+' || ch == '-' || ch == '/' || ch == '*';
         }
 
+        public static bool TryToAssign(string commandLine)
+        {
+            int equalsIndex = commandLine.IndexOf('=');
+            if (equalsIndex == -1) return false;
+
+            string variableName = commandLine.RemoveWhitespaces().Substring(0, equalsIndex - 1);
+            string newValue = commandLine.RemoveWhitespaces().Substring(equalsIndex);
+
+            if (Program.variables.ContainsKey(variableName))
+            {
+                Program.variables[variableName] = GetValue(newValue);
+                return true;
+            }
+            else
+            {
+                ExceptionsManager.UndefinedVariable(variableName);
+                return false;
+            }
+        }
         public static BuiltInCommand GetBuiltItCommand(string commandLine)
         {
             string[] splited = commandLine.SplitWithSpaces();

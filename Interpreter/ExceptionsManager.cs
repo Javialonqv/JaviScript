@@ -56,5 +56,9 @@ namespace Interpreter
         {
             PrintError(Program.currentLine, $"The \"{libraryName}\" can't be found!");
         }
+        public static void UndefinedVariable(string variableName)
+        {
+            PrintError(Program.currentLine, $"The variable of name \"{variableName}\" it's undefined.");
+        }
     }
 }

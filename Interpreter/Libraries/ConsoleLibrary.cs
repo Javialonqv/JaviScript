@@ -12,7 +12,8 @@ namespace Interpreter.Libraries
         {
             avaiableFunctions = new List<string>()
             {
-                "pause"
+                "pause",
+                "input"
             };
         }
 
@@ -31,6 +32,16 @@ namespace Interpreter.Libraries
 
                     result = null;
                     return true;
+
+                case "input":
+                    if (parameters.Length != 0)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        break;
+                    }
+
+                    result = GetUserInput();
+                    return true;
             }
 
             result = null;
@@ -44,6 +55,10 @@ namespace Interpreter.Libraries
                 Console.Write(message.ToString());
             }
             Console.ReadKey();
+        }
+        string? GetUserInput()
+        {
+            return Console.ReadLine();
         }
     }
 }
