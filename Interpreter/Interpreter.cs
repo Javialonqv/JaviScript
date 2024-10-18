@@ -346,16 +346,7 @@ namespace Interpreter
         // Executes the specified function.
         public static bool ExecuteFunction(string function, object[] parameters, out object? result, bool skipErrors = false)
         {
-            // First check in the built-in libraries that are LOADED.
-            foreach (Library library in Program.loadedLibraries)
-            {
-                if (library.avaiableFunctions.Contains(function)) // If there's a library that contains the specified function.
-                {
-                    return library.ExecuteFunction(function, parameters, out result); // Execute it.
-                }
-            }
-
-            // If not, if the function is a custom one, this should be true.
+            // First check if the function is a custom one, if that's the case, this should be true.
             if (Program.customFunctions.Any(func => func.name == function && func.parameters.Count == parameters.Length))
             {
                 // Get the function.
@@ -383,6 +374,15 @@ namespace Interpreter
                 // The function was executed successfully.
                 result = null;
                 return true;
+            }
+
+            // If not, check in the built-in libraries that are LOADED.
+            foreach (Library library in Program.loadedLibraries)
+            {
+                if (library.avaiableFunctions.Contains(function)) // If there's a library that contains the specified function.
+                {
+                    return library.ExecuteFunction(function, parameters, out result); // Execute it.
+                }
             }
 
             // If nothing works, throw an error and return false.

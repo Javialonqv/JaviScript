@@ -75,6 +75,14 @@ namespace Interpreter
                         // Extract all the function info.
                         string funcNameWithParenthesis = Interpreter.GetBuiltInCommandParameters(line)[0].ToString();
                         funcName = Interpreter.GetFunction(funcNameWithParenthesis);
+                        if (!Utilities.ValidFunctionName(funcName))
+                        {
+                            ExceptionsManager.InvalidFunctionName(funcName);
+                            funcName = "";
+                            insideOfAFunctionBlock = false;
+                            continue;
+                        }
+
                         var parameters = Interpreter.GetFunctionParameters(funcNameWithParenthesis, true);
                         foreach (var parm in parameters) { funcParameters.Add(parm.ToString()); }
                         funcStartIndex = i;
@@ -82,6 +90,10 @@ namespace Interpreter
                     if (command == BuiltInCommand.ENDFUNC)
                     {
                         // The functions ends here, add the function to the custom functions list with all the extracted info.
+                        if (!insideOfAFunctionBlock)
+                        {
+                            continue;
+                        }
                         insideOfAFunctionBlock = false;
                         customFunctions.Add(new CustomFunction(funcName, funcParameters, funcStartIndex, false));
                         funcName = "";

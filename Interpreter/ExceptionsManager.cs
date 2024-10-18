@@ -48,9 +48,14 @@ namespace Interpreter
             PrintError(Program.currentLine, $"A new function was detected before the last one was closed using \"EndFunc\".");
         }
 
+
         public static void InvalidOperation(string @operator, string firstType, string secondType)
         {
             PrintError(Program.currentLine, $"The \"{@operator}\" operator is not valid with types \"{firstType}\" and \"{secondType}\".");
+        }
+        public static void InvalidFunctionName(string functionName)
+        {
+            PrintError(Program.currentLine, $"The funciton name \"{functionName}\" is NOT valid!");
         }
         public static void LibraryNotFound(string libraryName)
         {
