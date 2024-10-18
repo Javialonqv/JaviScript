@@ -13,6 +13,7 @@ using Windows.ApplicationModel.Background;
 #pragma warning disable CS8602
 namespace Interpreter
 {
+    // All the built-in commands.
     public enum BuiltInCommand
     {
         IMPORT,
@@ -23,11 +24,13 @@ namespace Interpreter
 
     internal class Interpreter
     {
+        // All the built-in libraries.
         static Dictionary<string, string> integratedLibraries = new Dictionary<string, string>()
         {
             { "console", "ConsoleLibrary" }
         };
 
+        // To check if the specified command it's a buit-in one.
         public static bool ItsABuiltInCommand(string commandLine)
         {
             string[] splited = commandLine.SplitWithSpaces();
@@ -35,31 +38,32 @@ namespace Interpreter
             return Enum.TryParse(typeof(BuiltInCommand), splited[0], true, out object? result);
         }
 
+        // Try to convert the specified text into a value.
         public static dynamic GetValue(string text)
         {
-            // Ver si es un valor nulo.
+            // Check if the value is null or undefined.
             if (text == "null" || text == "Null" || text == "undefined" || text == "Undefined")
             {
                 return null;
             }
 
-            // Intentar tratarlo como una operacion aritmética.
+            // Try to check if it's an aritmetical operation.
             object aritmeticOperationResult = AritmeticOperationOrConcatenation(text);
             if (aritmeticOperationResult != null) return aritmeticOperationResult;
 
-            // Si es un string:
+            // If it's a string.
             if (text.StartsWith("\"") && text.EndsWith("\""))
             {
                 return text.Trim('\"');
             }
 
-            // Si es un int
+            // If it's a int.
             if (int.TryParse(text, out int intResult))
             {
                 return intResult;
             }
 
-            // Si es un float.
+            // If it's a float.
             if (text.EndsWith("f"))
             {
                 if (float.TryParse(text.Substring(0, text.Length - 2), out float floatResult))
@@ -68,7 +72,7 @@ namespace Interpreter
                 }
             }
 
-            // Si de casualidad es otro comando.
+            // If by any chance it's another command.
             if (Enum.TryParse(typeof(BuiltInCommand), text, true, out object? commandResult))
             {
                 string command = GetFunction(text);
@@ -77,17 +81,19 @@ namespace Interpreter
                 return result;
             }
 
-            // Ver si existe una variable con ese nombre.
+            // Check if there's a variable with that name.
             if (Program.variables.ContainsKey(text))
             {
                 return Program.variables[text];
             }
 
+            // If nothing works, just return the same text WITHOUT modifications.
             return text;
         }
+        // Tries to resolve the specified text as a aritmetical operation.
         public static object AritmeticOperationOrConcatenation(string text)
         {
-            // Checar si ejecutar si o no.
+            // Check if should execute or not.
             bool execute = false;
             foreach (char c in text)
             {
@@ -95,7 +101,8 @@ namespace Interpreter
             }
             if (!execute) return null;
 
-            // Crear los "tokens".
+            #region Tokenize
+            // Create the "tokens"
             text = text.RemoveWhitespaces();
             List<string> tokens = new List<string>();
             string currentToken = "";
@@ -107,20 +114,19 @@ namespace Interpreter
                     tokens.Add(currentToken);
                     currentToken = "";
                     tokens.Add(c.ToString());
-                    //i++;
                 }
                 else
                 {
                     currentToken += c;
                 }
             }
-            // Añadir el ultimo valor detectado si no está vacío.
+            // Add the last detected value if it's not empty.
             if (!string.IsNullOrEmpty(currentToken))
             {
                 tokens.Add(currentToken);
             }
 
-            // Si es que hay parentesis tanto de abertura como de cierre, realizar las operaciones dentro de ellos primero.
+            // If there are any parenthesis inside, solve them first.
             for (int i = 0; i < tokens.Count; i++)
             {
                 if (tokens[i] == "(")
@@ -139,11 +145,13 @@ namespace Interpreter
                     }
                 }
             }
+            #endregion
 
-            // Remover cualquier espacio en blanco dentro de los tokens.
+            // Remove any whitespace inside of the token list.
             tokens.RemoveAll(t => string.IsNullOrWhiteSpace(t));
 
-            // Realizar las operaciones recorriendo todos los tokens.
+            #region Resolve
+            // Solve all the operations inside of the final tokens.
             dynamic? finalResult = null;
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -159,17 +167,17 @@ namespace Interpreter
                     if (tokens[i] == "-")
                     {
                         try { finalResult -= GetValue(tokens[i + 1]); }
-                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null;}
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null; }
                     }
                     if (tokens[i] == "/")
                     {
                         try { finalResult /= GetValue(tokens[i + 1]); }
-                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null;}
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null; }
                     }
                     if (tokens[i] == "*")
                     {
                         try { finalResult *= GetValue(tokens[i + 1]); }
-                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null;}
+                        catch { ExceptionsManager.InvalidOperation(tokens[i], finalResult.GetType().Name, tokens[i + 1].GetType().Name); return null; }
                     }
                     i++;
                 }
@@ -178,38 +186,47 @@ namespace Interpreter
                     if (finalResult == null) finalResult = GetValue(tokens[i]);
                 }
             }
+            #endregion
 
-            // Finalmente, retornar el valor final obtenido.
+            // Finally, return the obtained result.
             return finalResult;
         }
+        // Just check if the specified char is an operator LOL.
         static bool IsOperator(char ch)
         {
             return ch == '+' || ch == '-' || ch == '/' || ch == '*';
         }
 
+        // Tries the specified command as an assigment one. 
         public static bool TryToAssign(string commandLine)
         {
+            // The assigment commands ALWAYS have an equals character.
             int equalsIndex = commandLine.IndexOf('=');
             if (equalsIndex == -1) return false;
 
+            // Get the variable name and the new value.
             string variableName = commandLine.RemoveWhitespaces().Substring(0, equalsIndex - 1);
             string newValue = commandLine.RemoveWhitespaces().Substring(equalsIndex);
 
+            // This only will work if the specified variable already exists and it's defined.
             if (Program.variables.ContainsKey(variableName))
             {
                 Program.variables[variableName] = GetValue(newValue);
                 return true;
             }
-            else
+            else // Else, throw an error.
             {
                 ExceptionsManager.UndefinedVariable(variableName);
                 return false;
             }
         }
+        // Gets the built-in command.
         public static BuiltInCommand GetBuiltItCommand(string commandLine)
         {
+            // Splits the command into spaces.
             string[] splited = commandLine.SplitWithSpaces();
 
+            // Try to parse the first element (the command itself) to the enum.
             if (Enum.TryParse(typeof(BuiltInCommand), splited[0], true, out object? result))
             {
                 return (BuiltInCommand)result;
@@ -220,22 +237,27 @@ namespace Interpreter
                 return default;
             }
         }
+        // Gets the built-in command parameters.
         public static object[] GetBuiltInCommandParameters(string commandLine)
         {
-            //object[] splited = commandLine.Split(" ").Skip(1).ToArray();
-
+            // Splits into spaces, then skips the first element.
             object[] temp1 = commandLine.SplitWithSpaces().Skip(1).ToArray();
+            // Combine all this into a simple string.
             string temp2 = string.Join("", temp1);
+            // Finally, split again by commas.
             object[] result = temp2.Split(",");
 
+            // Return the result, but before that, convert the value for each string.
             return result.Select(obj => obj = GetValue(obj.ToString())).ToArray();
         }
         public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters)
         {
             return ExecuteCommand(commandType, parameters, out object? result);
         }
+        // Executes the specified built-in command.
         public static bool ExecuteCommand(BuiltInCommand commandType, object[] parameters, out object? result)
         {
+            // FUNC and ENDFUNC aren´t here because they are managed in the Program class.
             switch (commandType)
             {
                 case BuiltInCommand.IMPORT:
@@ -274,30 +296,39 @@ namespace Interpreter
             return false;
         }
 
+        // Gets the specified function's name.
         public static string GetFunction(string commandLine)
         {
+            // Gets the parenthesis indexes.
             int parenthesisIndex = commandLine.IndexOf('(');
             int parenthesis2Index = commandLine.LastIndexOf(')');
+            // A function ALWAYS contains the TWO parenthesis.
             if (parenthesisIndex == -1 || parenthesis2Index == -1)
             {
                 ExceptionsManager.NoFunctionParenthesisFound(commandLine);
                 return "";
             }
 
+            // Return the function without the parenthesis.
             string command = commandLine.Substring(0, parenthesisIndex);
             return command;
         }
+        // Gets the specified function's parameters.
         public static object[] GetFunctionParameters(string commandLine, bool isFromACustomFunction = false)
         {
+            // Gets the parenthesis indexes.
             List<object> parameters = new List<object>();
             int firstIndex = commandLine.IndexOf('(');
             int secondIndex = commandLine.LastIndexOf(')');
+            // A function ALWAYS contains the TWO parenthesis.
             if (firstIndex == -1 || secondIndex == -1)
             {
                 return null;
             }
 
+            // Get all the content inside of the parenthesis, remove whitespaces and split by commas.
             string[] splitedParameters = commandLine.Substring(firstIndex + 1, secondIndex - firstIndex - 1).RemoveWhitespaces().Split(',');
+            // Foreach parameter, get it's real value.
             foreach (string parameter in splitedParameters)
             {
                 //string toAdd = parameter.Substring(0, parameter.Length - 2);
@@ -305,46 +336,56 @@ namespace Interpreter
                 if (!string.IsNullOrEmpty(parameter) && isFromACustomFunction) parameters.Add(parameter);
             }
 
+            // Do I really need to explain what this thing does? LOL
             return parameters.ToArray();
         }
         public static bool ExecuteFunction(string function, object[] parameters)
         {
             return ExecuteFunction(function, parameters, out object? result);
         }
+        // Executes the specified function.
         public static bool ExecuteFunction(string function, object[] parameters, out object? result)
         {
+            // First check in the built-in libraries that are LOADED.
             foreach (Library library in Program.loadedLibraries)
             {
-                if (library.avaiableFunctions.Contains(function))
+                if (library.avaiableFunctions.Contains(function)) // If there's a library that contains the specified function.
                 {
-                    return library.ExecuteFunction(function, parameters, out result);
+                    return library.ExecuteFunction(function, parameters, out result); // Execute it.
                 }
             }
 
+            // If not, if the function is a custom one, this should be true.
             if (Program.customFunctions.Any(func => func.name == function && func.parameters.Count == parameters.Length))
             {
+                // Get the function.
                 CustomFunction func = Program.customFunctions.Find(func => func.name == function);
 
+                // First iterate foreach parameter and add them as a new variable.
                 for (int i = 0; i < func.parameters.Count; i++)
                 {
                     Program.variables.Add(func.parameters[i], parameters[i]);
                 }
 
+                // Foreach line inside of the function block, execute the commands.
                 for (int i = func.startIndex; i < Program.fileLines.Length; i++)
                 {
                     if (Program.fileLines[i] == "EndFunc") break;
                     Program.ExecuteCommand(Program.fileLines[i], true);
                 }
 
+                // Delete the functions variables.
                 for (int i = 0; i < func.parameters.Count; i++)
                 {
                     Program.variables.Remove(func.parameters[i]);
                 }
 
+                // The function was executed successfully.
                 result = null;
                 return true;
             }
 
+            // If nothing works, throw an error and return false.
             ExceptionsManager.FunctionNotFound(function);
 
             result = null;
