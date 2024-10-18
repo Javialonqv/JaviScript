@@ -49,6 +49,7 @@ namespace Interpreter
         string funcName = "";
         List<string> funcParameters = new List<string>();
         int funcStartIndex = 0;
+        bool funcReturnsSomething = false;
         void FirstRead() // First read to the file to detect the custom functions.
         {
             for (int i = 0; i < fileLines.Length; i++)
@@ -87,6 +88,10 @@ namespace Interpreter
                         foreach (var parm in parameters) { funcParameters.Add(parm.ToString()); }
                         funcStartIndex = i;
                     }
+                    if (command == BuiltInCommand.RETURN)
+                    {
+                        funcReturnsSomething = true; // If the function has a return statement, that means the functions return something.
+                    }
                     if (command == BuiltInCommand.ENDFUNC)
                     {
                         // If this is false that means there is a end block before even starting a new function, that's makes no sense, just do nothing.
@@ -96,7 +101,7 @@ namespace Interpreter
                         }
                         // The functions ends here, add the function to the custom functions list with all the extracted info.
                         insideOfAFunctionBlock = false;
-                        customFunctions.Add(new CustomFunction(funcName, funcParameters, funcStartIndex, false));
+                        customFunctions.Add(new CustomFunction(funcName, funcParameters, funcStartIndex, funcReturnsSomething));
                         funcName = "";
                         funcParameters = new List<string>();
                         funcStartIndex = 0;
@@ -128,9 +133,15 @@ namespace Interpreter
         }
 
         static bool insideOfAFunctionBlock = false;
-        public static void ExecuteCommand(string line, bool executeFunc = false)
+        public static bool ExecuteCommand(string line,  bool executeFunc = false)
         {
-            if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return; // If the line is null of empty, skip it.
+            return ExecuteCommand(line, out object? result, executeFunc);
+        }
+        public static bool ExecuteCommand(string line, out object? result, bool executeFunc = false)
+        {
+            result = null;
+
+            if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return false; // If the line is null of empty, skip it.
 
             // If it's a built-in command.
             if (Interpreter.ItsABuiltInCommand(line))
@@ -141,30 +152,30 @@ namespace Interpreter
                 if (command == BuiltInCommand.FUNC)
                 {
                     insideOfAFunctionBlock = true;
-                    return;
+                    return false;
                 }
                 if (command == BuiltInCommand.ENDFUNC)
                 {
                     insideOfAFunctionBlock = false;
-                    return;
+                    return false;
                 }
-                if (insideOfAFunctionBlock) return;
+                if (insideOfAFunctionBlock) return false;
                 #endregion
 
                 var parameters = Interpreter.GetBuiltInCommandParameters(line);
-                Interpreter.ExecuteCommand(command, parameters);
+                return Interpreter.ExecuteCommand(command, parameters, out result);
             }
             else // It's a function with PARENTHESIS.
             {
-                if (insideOfAFunctionBlock && !executeFunc) return; // If it's inside of a function code block and this time can't execute it, return.
+                if (insideOfAFunctionBlock && !executeFunc) return false; // If it's inside of a function code block and this time can't execute it, return.
 
-                if (Interpreter.TryToAssign(line)) return;
+                if (Interpreter.TryToAssign(line)) return false;
 
                 // Just get the function name and parameters and execute it.
                 string command = Interpreter.GetFunction(line);
-                if (string.IsNullOrEmpty(command)) return;
+                if (string.IsNullOrEmpty(command)) return false;
                 var parameters = Interpreter.GetFunctionParameters(line);
-                Interpreter.ExecuteFunction(command, parameters);
+                return Interpreter.ExecuteFunction(command, parameters, out result);
             }
         }
     }

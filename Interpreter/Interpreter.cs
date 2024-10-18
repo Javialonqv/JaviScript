@@ -19,6 +19,7 @@ namespace Interpreter
         IMPORT,
         VAR,
         FUNC,
+        RETURN,
         ENDFUNC
     }
 
@@ -290,6 +291,15 @@ namespace Interpreter
                     Program.variables.Add(parameters[0].ToString(), parameters[1]);
                     result = null;
                     return true;
+
+                case BuiltInCommand.RETURN:
+                    if (parameters.Length > 1)
+                    {
+                        ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                        break;
+                    }
+                    result = parameters[0];
+                    return true;
             }
             
             result = null;
@@ -346,6 +356,8 @@ namespace Interpreter
         // Executes the specified function.
         public static bool ExecuteFunction(string function, object[] parameters, out object? result, bool skipErrors = false)
         {
+            result = null;
+
             // First check if the function is a custom one, if that's the case, this should be true.
             if (Program.customFunctions.Any(func => func.name == function && func.parameters.Count == parameters.Length))
             {
@@ -359,10 +371,16 @@ namespace Interpreter
                 }
 
                 // Foreach line inside of the function block, execute the commands.
-                for (int i = func.startIndex; i < Program.fileLines.Length; i++)
+                for (int i = func.startIndex + 1; i < Program.fileLines.Length; i++)
                 {
                     if (Program.fileLines[i] == "EndFunc") break;
-                    Program.ExecuteCommand(Program.fileLines[i], true);
+                    if (Program.ExecuteCommand(Program.fileLines[i], out object? customFuncResult, true))
+                    {
+                        if (GetBuiltItCommand(Program.fileLines[i]) == BuiltInCommand.RETURN)
+                        {
+                            result = customFuncResult;
+                        }
+                    }
                 }
 
                 // Delete the functions variables.
@@ -372,7 +390,7 @@ namespace Interpreter
                 }
 
                 // The function was executed successfully.
-                result = null;
+                //result = null;
                 return true;
             }
 
