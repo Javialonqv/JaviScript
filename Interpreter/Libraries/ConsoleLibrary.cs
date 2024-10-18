@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.Design;
 
 namespace Interpreter.Libraries
 {
@@ -15,6 +16,8 @@ namespace Interpreter.Libraries
                 "console.pause",
                 "console.input",
                 "console.clear",
+                "console.fgColor",
+                "console.bgColor"
             };
         }
 
@@ -57,6 +60,30 @@ namespace Interpreter.Libraries
 
                     result = null;
                     return true;
+
+                case "console.fgColor":
+                case "fgColor":
+                    if (parameters.Length > 1)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        break;
+                    }
+                    ChangeForegroundColor((string)parameters[0]);
+
+                    result = null;
+                    return true;
+
+                case "console.bgColor":
+                case "bgColor":
+                    if (parameters.Length > 1)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        break;
+                    }
+                    ChangeBackgroundColor((string)parameters[0]);
+
+                    result = null;
+                    return true;
             }
 
             result = null;
@@ -75,5 +102,34 @@ namespace Interpreter.Libraries
         {
             return Console.ReadLine();
         }
+        void ChangeForegroundColor(string color)
+        {
+            if (Enum.TryParse(typeof(ConsoleColor), color, true, out object? parsedColor))
+            {
+                Console.ForegroundColor = (ConsoleColor)parsedColor;
+            }
+            else
+            {
+                ColorNotFound(color);
+            }
+        }
+        void ChangeBackgroundColor(string color)
+        {
+            if (Enum.TryParse(typeof(ConsoleColor), color, true, out object? parsedColor))
+            {
+                Console.BackgroundColor = (ConsoleColor)parsedColor;
+            }
+            else
+            {
+                ColorNotFound(color);
+            }
+        }
+
+        #region Console Exceptions
+        public void ColorNotFound(string color)
+        {
+            ExceptionsManager.PrintError(Program.currentLine, $"The \"{color}\" color wasn't found!");
+        }
+        #endregion
     }
 }

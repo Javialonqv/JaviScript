@@ -8,7 +8,7 @@ namespace Interpreter
 {
     public static class ExceptionsManager
     {
-        static void PrintError(int line, string errorMessage)
+        public static void PrintError(int line, string errorMessage)
         {
             string text = $"Line {line}: {errorMessage}";
             MessageBox.Show(text, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
