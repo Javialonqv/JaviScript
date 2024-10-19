@@ -22,14 +22,21 @@ namespace Interpreter
         [STAThread]
         static void Main(string[] args)
         {
+            Init program = new Init();
+            loadedLibraries.Add(new MainLibrary());
+            program.RequestCodeFile();
+            program.ReadCodeFile();
+            program.FirstRead();
+            program.ExecuteLines();
+
             try
             {
-                Init program = new Init();
-                loadedLibraries.Add(new MainLibrary());
-                program.RequestCodeFile();
-                program.ReadCodeFile();
-                program.FirstRead();
-                program.ExecuteLines();
+                //Init program = new Init();
+                //loadedLibraries.Add(new MainLibrary());
+                //program.RequestCodeFile();
+                //program.ReadCodeFile();
+                //program.FirstRead();
+                //program.ExecuteLines();
             }
             catch (Exception e)
             {

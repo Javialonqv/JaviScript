@@ -13,8 +13,13 @@ namespace Interpreter.Libraries
             avaiableFunctions = new List<string>()
             {
                 "convert.int",
+                "convert.tryInt",
+
                 "convert.str",
-                "convert.float"
+                "convert.tryStr",
+
+                "convert.float",
+                "convert.tryFloat",
             };
         }
 
@@ -32,6 +37,16 @@ namespace Interpreter.Libraries
                     result = ConvertToInt(parameters[0]);
                     return true;
 
+                case "convert.tryInt":
+                case "tryInt":
+                    if (parameters.Length != 1)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        break;
+                    }
+                    result = TryConvertToInt(parameters[0]);
+                    return true;
+
                 case "convert.str":
                 case "str":
                     if (parameters.Length != 1)
@@ -42,6 +57,16 @@ namespace Interpreter.Libraries
                     result = ConvertToString(parameters[0]);
                     return true;
 
+                case "convert.tryStr":
+                case "tryStr":
+                    if (parameters.Length != 1)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        break;
+                    }
+                    result = TryConvertToString(parameters[0]);
+                    return true;
+
                 case "convert.float":
                 case "float":
                     if (parameters.Length != 1)
@@ -50,6 +75,16 @@ namespace Interpreter.Libraries
                         break;
                     }
                     result = ConvertToFloat(parameters[0]);
+                    return true;
+
+                case "convert.tryFloat":
+                case "tryFloat":
+                    if (parameters.Length != 1)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        break;
+                    }
+                    result = TryConvertToFloat(parameters[0]);
                     return true;
             }
 
@@ -69,6 +104,18 @@ namespace Interpreter.Libraries
                 return null;
             }
         }
+        bool TryConvertToInt(object value)
+        {
+            try
+            {
+                int result = Convert.ToInt32(value);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         string? ConvertToString(object value)
         {
@@ -82,6 +129,18 @@ namespace Interpreter.Libraries
                 return null;
             }
         }
+        bool TryConvertToString(object value)
+        {
+            try
+            {
+                string result = Convert.ToString(value);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         float? ConvertToFloat(object value)
         {
@@ -93,6 +152,18 @@ namespace Interpreter.Libraries
             {
                 ExceptionsManager.CantConvertFromTo(value, value.GetType().Name, "Float");
                 return null;
+            }
+        }
+        bool TryConvertToFloat(object value)
+        {
+            try
+            {
+                float result = Convert.ToSingle(value);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

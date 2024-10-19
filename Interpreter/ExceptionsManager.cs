@@ -15,7 +15,8 @@ namespace Interpreter
         }
         public static void CriticalError(string errorMessage)
         {
-            MessageBox.Show(errorMessage, "CRITICAL ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            string text = $"Line {Init.currentLine}: {errorMessage}";
+            MessageBox.Show(text, "CRITICAL ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         public static void BuiltInCommandNotFound(string commandName)
