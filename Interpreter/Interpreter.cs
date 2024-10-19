@@ -53,6 +53,20 @@ namespace Interpreter
             {
                 BuiltInCommand command = GetBuiltItCommand(line);
 
+                #region Just to skip the functions keywords
+                if (command == BuiltInCommand.FUNC)
+                {
+                    Init.insideOfAFunctionBlock = true;
+                    return false;
+                }
+                if (command == BuiltInCommand.ENDFUNC)
+                {
+                    Init.insideOfAFunctionBlock = false;
+                    return false;
+                }
+                if (Init.insideOfAFunctionBlock) return false;
+                #endregion
+
                 // If the command is Else.
                 if (command == BuiltInCommand.ELSE)
                 {
@@ -85,20 +99,6 @@ namespace Interpreter
                         return false;
                     }
                 }
-
-                #region Just to skip the functions keywords
-                if (command == BuiltInCommand.FUNC)
-                {
-                    Init.insideOfAFunctionBlock = true;
-                    return false;
-                }
-                if (command == BuiltInCommand.ENDFUNC)
-                {
-                    Init.insideOfAFunctionBlock = false;
-                    return false;
-                }
-                if (Init.insideOfAFunctionBlock) return false;
-                #endregion
 
                 var parameters = GetBuiltInCommandParameters(line);
                 return ExecuteCommand(command, parameters, out result);
@@ -511,34 +511,18 @@ namespace Interpreter
             #endregion
 
             #region Tokenize
-            //string pattern = @"(?=[\+\-\*/])|(?<=[\+\-\*/])";
-            //string pattern = @"(\()|(\))|(\d+)|([a-zA-Z_][a-zA-Z0-9_]*\(\))|([\+\-\*/])";
-            //string pattern = @"(\d+|[\+\-\*/])";
-            //string pattern = @"([a-zA-Z_][a-zA-Z0-9_]*\([^()]*\))|([\""][^\""]*[\""])|(\d+)|([\+\-\*/])|([\(\)])";
+            // The REGEX pattern (I dont even know what does this means).
+            string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)";
 
             // Create the "tokens"
             text = text.RemoveWhitespaces();
             List<string> tokens = new List<string>();
-            string currentToken = "";
-            for (int i = 0; i < text.Length; i++)
+
+            foreach (Match match in Regex.Matches(text, pattern))
             {
-                char c = text[i];
-                if (Utilities.IsOperator(c) || c == '(' || c == ')')
-                {
-                    tokens.Add(currentToken);
-                    currentToken = "";
-                    tokens.Add(c.ToString());
-                }
-                else
-                {
-                    currentToken += c;
-                }
+                tokens.Add(match.Value);
             }
-            // Add the last detected value if it's not empty.
-            if (!string.IsNullOrEmpty(currentToken))
-            {
-                tokens.Add(currentToken);
-            }
+
             #endregion
 
             #region Solve Parenthesis First
@@ -551,7 +535,7 @@ namespace Interpreter
                     {
                         if (tokens[j] == ")")
                         {
-                            string toPass = string.Join("", tokens.GetRange(i + 1, j - 4));
+                            string toPass = string.Join("", tokens.GetRange(i + 1, j - i - 1));
                             object result = AritmeticOperationOrConcatenation(toPass);
                             tokens.RemoveRange(i, j - i + 1);
 #pragma warning disable CS8604

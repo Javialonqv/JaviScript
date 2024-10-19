@@ -10,7 +10,8 @@ namespace Interpreter
         static Dictionary<string, string> integratedLibraries = new Dictionary<string, string>()
         {
             { "console", "ConsoleLibrary" },
-            { "convert", "ConvertLibrary" }
+            { "convert", "ConvertLibrary" },
+            { "internal", "InternalLibrary" }
         };
 
         public static bool Import(BuiltInCommand commandType, object[] parameters)
