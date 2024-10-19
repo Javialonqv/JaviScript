@@ -457,6 +457,12 @@ namespace Interpreter
                 }
             }
 
+            // If it's a bool.
+            if (text.ToLower() == "true" || text.ToLower() == "false")
+            {
+                return bool.Parse(text);
+            }
+
             // Check if there's a variable with that name.
             if (Init.variables.ContainsKey(text))
             {
@@ -505,6 +511,11 @@ namespace Interpreter
             #endregion
 
             #region Tokenize
+            //string pattern = @"(?=[\+\-\*/])|(?<=[\+\-\*/])";
+            //string pattern = @"(\()|(\))|(\d+)|([a-zA-Z_][a-zA-Z0-9_]*\(\))|([\+\-\*/])";
+            //string pattern = @"(\d+|[\+\-\*/])";
+            //string pattern = @"([a-zA-Z_][a-zA-Z0-9_]*\([^()]*\))|([\""][^\""]*[\""])|(\d+)|([\+\-\*/])|([\(\)])";
+
             // Create the "tokens"
             text = text.RemoveWhitespaces();
             List<string> tokens = new List<string>();

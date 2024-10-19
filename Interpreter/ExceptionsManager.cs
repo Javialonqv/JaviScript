@@ -13,6 +13,10 @@ namespace Interpreter
             string text = $"Line {line}: {errorMessage}";
             MessageBox.Show(text, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+        public static void CriticalError(string errorMessage)
+        {
+            MessageBox.Show(errorMessage, "CRITICAL ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
 
         public static void BuiltInCommandNotFound(string commandName)
         {
