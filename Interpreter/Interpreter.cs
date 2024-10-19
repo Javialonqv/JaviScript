@@ -498,6 +498,7 @@ namespace Interpreter
             bool execute = false;
             foreach (char c in text)
             {
+                // If the string doesn't contain an operator, do nothing, return.
                 if (Utilities.IsOperator(c)) execute = true;
             }
             if (!execute) return null;

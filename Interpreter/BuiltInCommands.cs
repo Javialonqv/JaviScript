@@ -25,7 +25,7 @@ namespace Interpreter
             {
 #pragma warning disable CS8600
                 string realLibraryClassName = integratedLibraries[parameters[0].ToString()];
-                Program.loadedLibraries.Add((Library)Utilities.CreateInstance(realLibraryClassName));
+                Init.loadedLibraries.Add((Library)Utilities.CreateInstance(realLibraryClassName));
                 return true;
             }
             else
@@ -45,12 +45,12 @@ namespace Interpreter
                 return false;
             }
             string funcName = parameters[0].ToString();
-            if (Program.variables.ContainsKey(funcName) || Program.customFunctions.Any(func => func.name == funcName))
+            if (Init.variables.ContainsKey(funcName) || Init.customFunctions.Any(func => func.name == funcName))
             {
                 ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
                 return false;
             }
-            Program.variables.Add(parameters[0].ToString(), parameters[1]);
+            Init.variables.Add(parameters[0].ToString(), parameters[1]);
 
             return true;
         }
@@ -76,7 +76,7 @@ namespace Interpreter
                 return false;
             }
 
-            Program.ifBlocks.Push((bool)parameters[0]);
+            Init.ifBlocks.Push((bool)parameters[0]);
             return true;
         }
 
@@ -88,8 +88,8 @@ namespace Interpreter
                 return false;
             }
 
-            bool oldIfBlock = Program.ifBlocks.Pop();
-            Program.ifBlocks.Push((bool)parameters[0] && !oldIfBlock);
+            bool oldIfBlock = Init.ifBlocks.Pop();
+            Init.ifBlocks.Push((bool)parameters[0] && !oldIfBlock);
             return true;
         }
     }
