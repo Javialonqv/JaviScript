@@ -13,7 +13,7 @@ They're 2 types of commands in the language, the `Built-In commands` and the `Fu
   
 Use a `#` at the start of the line to write comments in the code.
 
-## Buil-In Commands
+## Built-In Commands
 The built-in commands are the following ones:\
 `import <name>` To import an specific library.\
 `var <name> <value>` To create a variable with the specified name and value.\
@@ -26,7 +26,7 @@ The built-in commands are the following ones:\
 `EndIf` To end a block of code that represents an If one.
 
 ### Variables
-The variables are defined with `var <name> <value>`. The two paramethers are required.\
+The variables are defined with `var <name> <value>`. The two paramethers are required and the value type also can change.\
 One you define them, you can't define any variable of **function** with the same name, or it wull throw an error.\
 The default values are:\
 `null` Put `null`, `Null`, `undefined` or `Undefined`.\
@@ -34,6 +34,9 @@ The default values are:\
 `int` Put any valid number in the value field.\
 `float` Put any valid number with an `f` at the end.\
 `bool` Put `true`, `false` OR a bool operator, such as `1 == 1`.
+
+The variables also have functions in them, such as:
+`getType()` To get the current type of the variable.
 
 ## Libraries
 The libraries are files with functions included in the interpreter of the language, those functions can be executed ONLY if you import then using the `import` command.
@@ -55,3 +58,9 @@ The functions are the following ones:\
 `tryStr(value)` Returns true if the specified value can be converted to an string value.\
 `float(value)` Returns the specified value to a float value.\
 `tryFloat(value)` Returns true if the specified value can be converted to a float value.
+### Internal Library
+This library has utilities to execute code or certain operations at internal level.\
+The functions are the following ones:\
+`execute(text)` Executes the specified command in **JaviScript** language.\
+`execute(text)` Executes the specified **C#** code.\
+`getType(variable)` Returns the type of the specified variable.
