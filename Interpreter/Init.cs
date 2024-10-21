@@ -26,8 +26,11 @@ namespace Interpreter
             loadedLibraries.Add(new MainLibrary());
             program.RequestCodeFile();
             program.ReadCodeFile();
-            program.FirstRead();
-            program.ExecuteLines();
+            
+            if (program.FirstRead())
+            {
+                program.ExecuteLines();
+            }
 
             try
             {
@@ -63,17 +66,20 @@ namespace Interpreter
             fileLines = File.ReadAllLines(codeFilePath);
         }
 
-        void FirstRead() // First read to the file to detect the custom functions.
+        bool FirstRead() // First read to the file to detect the custom functions.
         {
-            for (int i = 0; i < fileLines.Length; i++)
+            for (int i = 0; i < fileLines.Length; i++) // Iterate foreach line in the code file.
             {
                 currentLine = i + 1;
                 string line = fileLines[i];
 
-                Interpreter.CreateCustomFunction(line, i);
+                if (!Interpreter.CreateCustomFunction(line, i)) // If the interpreter returns false, an error was thrown.
+                {
+                    return false;
+                }
             }
 
-            Interpreter.AfterFirstReadCheck();
+            return Interpreter.AfterFirstReadCheck();
         }
 
         void ExecuteLines()

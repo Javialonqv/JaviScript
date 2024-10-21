@@ -355,10 +355,10 @@ namespace Interpreter
             return false;
         }
 
-        public static void CreateCustomFunction(string line, int currentLine)
+        public static bool CreateCustomFunction(string line, int currentLine)
         {
             // If the line is null of empty, skip it.
-            if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return;
+            if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return true;
 
             // If it's a built-in command.
             if (ItsABuiltInCommand(line))
@@ -371,12 +371,12 @@ namespace Interpreter
                     if (Init.ifBlocks.Count > 0) // You can't write functions inside of an if block.
                     {
                         ExceptionsManager.CantDefineFunctionsInsideOfBlock("If");
-                        return;
+                        return false;
                     }
                     if (Init.insideOfAFunctionBlock) // To begin a new function you need to close the last one first, lol.
                     {
                         ExceptionsManager.FunctionDetectedBeforeClosingTheLastOne();
-                        return;
+                        return false;
                     }
 
                     Init.insideOfAFunctionBlock = true;
@@ -389,7 +389,7 @@ namespace Interpreter
                         ExceptionsManager.InvalidFunctionName(funcName);
                         funcName = "";
                         Init.insideOfAFunctionBlock = false;
-                        return;
+                        return false;
                     }
                     // Also you can't create a new function if it's name has been already used by another one or a variable.
                     if (Init.variables.Any(var => var.name == funcName) || Init.customFunctions.Any(func => func.name == funcName))
@@ -397,7 +397,7 @@ namespace Interpreter
                         ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
                         funcName = "";
                         Init.insideOfAFunctionBlock = false;
-                        return;
+                        return false;
                     }
 
                     // Finally, if everything it's fine, create it.
@@ -414,7 +414,7 @@ namespace Interpreter
                     // If this is false that means there is a end block before even starting a new function, that's makes no sense, just do nothing.
                     if (!Init.insideOfAFunctionBlock)
                     {
-                        return;
+                        return false;
                     }
                     // The functions ends here, add the function to the custom functions list with all the extracted info.
                     Init.insideOfAFunctionBlock = false;
@@ -436,10 +436,12 @@ namespace Interpreter
                     else
                     {
                         ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "EndBlock");
-                        return;
+                        return false;
                     }
                 }
             }
+
+            return true;
         }
         #endregion
 
@@ -821,17 +823,19 @@ namespace Interpreter
         }
         #endregion
 
-        public static void AfterFirstReadCheck()
+        public static bool AfterFirstReadCheck()
         {
             // If the If Blocks count is greater than 0, that means an If block wasn't closed before reaching the end of the file.
             if (Init.ifBlocks.Count > 0)
             {
                 ExceptionsManager.BlockNotClosed("If");
+                return false;
             }
             // If true that means no EndFunc code was reached. Throw an error.
             if (Init.insideOfAFunctionBlock)
             {
                 ExceptionsManager.FunctionsWasntClosed(funcName);
+                return false;
                 //customFunctions.Remove(customFunctions.Last());
             }
 
@@ -839,6 +843,8 @@ namespace Interpreter
             Init.currentLine = 0;
             Init.insideOfAFunctionBlock = false;
             Init.ifBlocks = new Stack<bool>();
+
+            return true;
         }
     }
 }
