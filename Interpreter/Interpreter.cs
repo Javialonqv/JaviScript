@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Windows.Media.AppBroadcasting;
 using Interpreter.Libraries;
 using Windows.ApplicationModel.Background;
+using System.Numerics;
 
 #pragma warning disable CS8603
 #pragma warning disable CS8602
@@ -512,7 +513,8 @@ namespace Interpreter
 
             #region Tokenize
             // The REGEX pattern (I dont even know what does this means).
-            string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)";
+            //string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)";
+            string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+\\([^()]*\\([^()]*\\)[^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)\r\n";
 
             // Create the "tokens"
             text = text.RemoveWhitespaces();

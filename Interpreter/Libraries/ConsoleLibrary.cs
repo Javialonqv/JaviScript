@@ -15,6 +15,7 @@ namespace Interpreter.Libraries
             {
                 "console.pause",
                 "console.input",
+                "console.key",
                 "console.clear",
                 "console.fgColor",
                 "console.bgColor"
@@ -47,6 +48,17 @@ namespace Interpreter.Libraries
                     }
 
                     result = GetUserInput();
+                    return true;
+
+                case "console.key":
+                case "key":
+                    if (parameters.Length != 0)
+                    {
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        break;
+                    }
+
+                    result = GetUserKey();
                     return true;
 
                 case "console.clear":
@@ -101,6 +113,10 @@ namespace Interpreter.Libraries
         string? GetUserInput()
         {
             return Console.ReadLine();
+        }
+        ConsoleKey GetUserKey()
+        {
+            return Console.ReadKey().Key;
         }
         void ChangeForegroundColor(string color)
         {
