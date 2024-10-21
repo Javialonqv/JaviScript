@@ -14,26 +14,35 @@ They're 2 types of commands in the language, the `Built-In commands` and the `Fu
 Use a `#` at the start of the line to write comments in the code.
 
 ## Buil-In Commands
-The built-in commands are the following ones:
-`import <name>` To import an specific library.
-`var <name> <value>` To create a variable with the specified name and value.
-`Func <name>()` To start creating a **custom function** with the specified name.
-`return <value>` To return a value if it's inside of a custom function.
-`EndFunc` To stop the block of code that represents the custom function.
-`If <conditions>` To create an If block with the specified conditions.
-`Else` To create a new block of code so, if the previous if it's NOT true, then this code will be executed.
-`ElseIf <conditon>` To create a new block of code so, if the previous if it's NOT true AND the next conditions are TRUE, execute this code.
+The built-in commands are the following ones:\
+`import <name>` To import an specific library.\
+`var <name> <value>` To create a variable with the specified name and value.\
+`Func <name>()` To start creating a **custom function** with the specified name.\
+`return <value>` To return a value if it's inside of a custom function.\
+`EndFunc` To stop the block of code that represents the custom function.\
+`If <conditions>` To create an If block with the specified conditions.\
+`Else` To create a new block of code so, if the previous if it's NOT true, then this code will be executed.\
+`ElseIf <conditon>` To create a new block of code so, if the previous if it's NOT true AND the next conditions are TRUE, execute this code.\
 `EndIf` To end a block of code that represents an If one.
+
+### Variables
+The variables are defined with `var <name> <value>`. The two paramethers are required.\
+One you define them, you can't define any variable of **function** with the same name, or it wull throw an error.\
+The default values are:\
+`null` Put `null`, `Null`, `undefined` or `Undefined`.\
+`string` Put the value between quotes or, in some cases without them, but we recommend WITH quotes.\
+`int` Put any valid number in the value field.\
+`float` Put any valid number with an `f` at the end.\
+`bool` Put `true`, `false` OR a bool operator, such as `1 == 1`.
 
 ## Libraries
 The libraries are files with functions included in the interpreter of the language, those functions can be executed ONLY if you import then using the `import` command.
-The syntaxis is `import <libraryNme>`.
 
 The parameters between **[]** are optional.
 
 ### Main Library
-This library is automatically loaded when the interpreter start, this is the only library you don't need to import manually.
-The functions are the following ones:
-`print(value)` To print the specified value in the console.
-`printl(value)` To print the specified value in the console AND prints a new line.
+This library is automatically loaded when the interpreter start, this is the only library you don't need to import manually.\
+The functions are the following ones:\
+`print(value)` To print the specified value in the console.\
+`printl(value)` To print the specified value in the console AND prints a new line.\
 `exit([<code>])` Exits from the application with the specified exit code, 0 if no exit code if specified.
