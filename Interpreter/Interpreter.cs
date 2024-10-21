@@ -483,7 +483,7 @@ namespace Interpreter
             // Check if there's a variable with that name.
             if (Init.variables.Any(var => var.name == text))
             {
-                return Init.variables.Find(var => var.name == text);
+                return Init.variables.Find(var => var.name == text).value;
             }
 
             // Check if the value can be treated as a IF statement.

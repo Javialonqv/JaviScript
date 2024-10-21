@@ -30,7 +30,7 @@ namespace Interpreter.Libraries
                 case "pause":
                     if (parameters.Length > 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "0 or 1");
                         break;
                     }
                     if (parameters.Length == 1) { Pause(parameters[0]); }
@@ -43,7 +43,7 @@ namespace Interpreter.Libraries
                 case "input":
                     if (parameters.Length != 0)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "0");
                         break;
                     }
 
@@ -54,7 +54,7 @@ namespace Interpreter.Libraries
                 case "key":
                     if (parameters.Length != 0)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "0");
                         break;
                     }
 
@@ -63,9 +63,9 @@ namespace Interpreter.Libraries
 
                 case "console.clear":
                 case "clear":
-                    if (parameters.Length > 0)
+                    if (parameters.Length != 0)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 0);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "0");
                         break;
                     }
                     Console.Clear();
@@ -75,24 +75,38 @@ namespace Interpreter.Libraries
 
                 case "console.fgColor":
                 case "fgColor":
-                    if (parameters.Length > 1)
+                    if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
-                    ChangeForegroundColor((string)parameters[0]);
+                    if (parameters[0] is string)
+                    {
+                        ChangeForegroundColor((string)parameters[0]);
+                    }
+                    else
+                    {
+                        ExceptionsManager.InvalidFunctionParameterType(command, 0, parameters[0].GetType().Name, "String");
+                    }
 
                     result = null;
                     return true;
 
                 case "console.bgColor":
                 case "bgColor":
-                    if (parameters.Length > 1)
+                    if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
-                    ChangeBackgroundColor((string)parameters[0]);
+                    if (parameters[0] is string)
+                    {
+                        ChangeBackgroundColor((string)parameters[0]);
+                    }
+                    else
+                    {
+                        ExceptionsManager.InvalidFunctionParameterType(command, 0, parameters[0].GetType().Name, "String");
+                    }
 
                     result = null;
                     return true;

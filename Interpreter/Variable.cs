@@ -22,9 +22,9 @@ namespace Interpreter
             switch (command)
             {
                 case "getType":
-                    if (parameters.Length > 0)
+                    if (parameters.Length != 0)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 0);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "0");
                         break;
                     }
                     result = instance.value.GetType().Name;

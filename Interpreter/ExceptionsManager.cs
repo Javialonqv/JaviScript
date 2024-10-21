@@ -36,9 +36,9 @@ namespace Interpreter
         {
             PrintError(Init.currentLine, $"The \"{functionName}\" function can´t be found. Are you missing a library?");
         }
-        public static void IncorrectFunctionParametersNumber(string functionName, int parametersCount)
+        public static void IncorrectFunctionParametersNumber(string functionName, int givenParametersCount, string expectedParametersCount)
         {
-            PrintError(Init.currentLine, $"The \"{functionName}\" function doesn't take {parametersCount} parameters.");
+            PrintError(Init.currentLine, $"The \"{functionName}\" function doesn't take {givenParametersCount} parameters. Has to be {expectedParametersCount}.");
         }
         public static void InvalidFunctionParameterType(string functionName, int parameterIndex, string givenType, string expectedType)
         {

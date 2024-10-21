@@ -27,7 +27,7 @@ namespace Interpreter.Libraries
                 case "print":
                     if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     Print(parameters[0], false);
@@ -38,7 +38,7 @@ namespace Interpreter.Libraries
                 case "printl":
                     if (parameters.Length > 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     if (parameters.Length == 1) { Print(parameters[0], true); }
@@ -50,7 +50,7 @@ namespace Interpreter.Libraries
                 case "exit":
                     if (parameters.Length > 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "0 or 1");
                         break;
                     }
                     if (parameters.Length == 1)

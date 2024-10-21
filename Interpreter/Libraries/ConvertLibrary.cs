@@ -31,7 +31,7 @@ namespace Interpreter.Libraries
                 case "int":
                     if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     result = ConvertToInt(parameters[0]);
@@ -41,7 +41,7 @@ namespace Interpreter.Libraries
                 case "tryInt":
                     if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     result = TryConvertToInt(parameters[0]);
@@ -51,7 +51,7 @@ namespace Interpreter.Libraries
                 case "str":
                     if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     result = ConvertToString(parameters[0]);
@@ -61,7 +61,7 @@ namespace Interpreter.Libraries
                 case "tryStr":
                     if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     result = TryConvertToString(parameters[0]);
@@ -71,7 +71,7 @@ namespace Interpreter.Libraries
                 case "float":
                     if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     result = ConvertToFloat(parameters[0]);
@@ -81,7 +81,7 @@ namespace Interpreter.Libraries
                 case "tryFloat":
                     if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     result = TryConvertToFloat(parameters[0]);

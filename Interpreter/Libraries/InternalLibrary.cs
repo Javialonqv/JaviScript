@@ -28,9 +28,9 @@ namespace Interpreter.Libraries
             {
                 case "internal.execute":
                 case "execute":
-                    if (parameters.Length > 1)
+                    if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     Interpreter.ExecuteLine((string)parameters[0]);
@@ -40,9 +40,9 @@ namespace Interpreter.Libraries
 
                 case "internal.call":
                 case "call":
-                    if (parameters.Length > 1)
+                    if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
                     Call((string)parameters[0]);
@@ -52,9 +52,9 @@ namespace Interpreter.Libraries
 
                 case "internal.getType":
                 case "getType":
-                    if (parameters.Length > 1)
+                    if (parameters.Length != 1)
                     {
-                        ExceptionsManager.IncorrectFunctionParametersNumber(command, 1);
+                        ExceptionsManager.IncorrectFunctionParametersNumber(command, parameters.Length, "1");
                         break;
                     }
 
