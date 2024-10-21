@@ -275,7 +275,23 @@ namespace Interpreter
         {
             result = null;
 
-            // First check if the function is a custom one, if that's the case, this should be true.
+            // First, if the function has a point in it...
+            if (function.Contains("."))
+            {
+                string[] splitedFunc = function.Split('.');
+                // And the text before that it's a variable.
+                if (Init.variables.Any(var => var.name == splitedFunc[0]))
+                {
+                    Variable variable = Init.variables.Find(var => var.name == splitedFunc[0]);
+                    if (Variable.ExecuteFunction(splitedFunc[1], parameters, variable, out object? varResult))
+                    {
+                        result = varResult;
+                        return true;
+                    }
+                }
+            }
+
+            // If not, check if the function is a custom one, if that's the case, this should be true.
             if (Init.customFunctions.Any(func => func.name == function && func.parameters.Count == parameters.Length))
             {
                 // Get the function.
@@ -284,7 +300,7 @@ namespace Interpreter
                 // First iterate foreach parameter and add them add them a new variable.
                 for (int i = 0; i < func.parameters.Count; i++)
                 {
-                    Init.variables.Add(func.parameters[i], parameters[i]);
+                    Init.variables.Add(new Variable(func.parameters[i], parameters[i]));
                 }
 
                 // Foreach line inside of the function block, execute the commands or functions.
@@ -310,7 +326,7 @@ namespace Interpreter
                 // Delete the function's variables.
                 for (int i = 0; i < func.parameters.Count; i++)
                 {
-                    Init.variables.Remove(func.parameters[i]);
+                    Init.variables.RemoveAll(var => var.name == func.parameters[i]);
                 }
 
                 // The function was executed successfully.
@@ -376,7 +392,7 @@ namespace Interpreter
                         return;
                     }
                     // Also you can't create a new function if it's name has been already used by another one or a variable.
-                    if (Init.variables.ContainsKey(funcName) || Init.customFunctions.Any(func => func.name == funcName))
+                    if (Init.variables.Any(var => var.name == funcName) || Init.customFunctions.Any(func => func.name == funcName))
                     {
                         ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
                         funcName = "";
@@ -465,9 +481,9 @@ namespace Interpreter
             }
 
             // Check if there's a variable with that name.
-            if (Init.variables.ContainsKey(text))
+            if (Init.variables.Any(var => var.name == text))
             {
-                return Init.variables[text];
+                return Init.variables.Find(var => var.name == text);
             }
 
             // Check if the value can be treated as a IF statement.
@@ -725,9 +741,9 @@ namespace Interpreter
             string newValue = splited[1];
 
             // This only will work if the specified variable already exists and it's defined.
-            if (Init.variables.ContainsKey(variableName))
+            if (Init.variables.Any(var => var.name == variableName))
             {
-                Init.variables[variableName] = GetValue(newValue);
+                Init.variables[Init.variables.FindIndex(var => var.name == variableName)] = GetValue(newValue);
                 return true;
             }
             else // Else, throw an error.

@@ -13,7 +13,7 @@ namespace Interpreter
 
         public static List<Library> loadedLibraries = new List<Library>();
         public static List<CustomFunction> customFunctions = new List<CustomFunction>();
-        public static Dictionary<string, object> variables = new Dictionary<string, object>();
+        public static List<Variable> variables = new List<Variable>();
         public static Stack<bool> ifBlocks = new Stack<bool>();
 
         public static bool insideOfAFunctionBlock = false;

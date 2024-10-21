@@ -46,12 +46,12 @@ namespace Interpreter
                 return false;
             }
             string funcName = parameters[0].ToString();
-            if (Init.variables.ContainsKey(funcName) || Init.customFunctions.Any(func => func.name == funcName))
+            if (Init.variables.Any(var => var.name == funcName) || Init.customFunctions.Any(func => func.name == funcName))
             {
                 ExceptionsManager.VariableOrFunctionAlreadyDefined(funcName);
                 return false;
             }
-            Init.variables.Add(parameters[0].ToString(), parameters[1]);
+            Init.variables.Add(new Variable(parameters[0].ToString(), parameters[1]));
 
             return true;
         }
