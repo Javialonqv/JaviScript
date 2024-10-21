@@ -46,3 +46,12 @@ The functions are the following ones:\
 `print(value)` To print the specified value in the console.\
 `printl(value)` To print the specified value in the console AND prints a new line.\
 `exit([<code>])` Exits from the application with the specified exit code, 0 if no exit code if specified.
+### Convert Library
+This library has utilities to convert values from a type to another one.\
+The functions are the following ones:\
+`int(value)` Returns the specified value to an int value.\
+`tryInt(value)` Returns true if the specified value can be converted to an int value.\
+`str(value)` Returns the specified value to an string value.\
+`tryStr(value)` Returns true if the specified value can be converted to an string value.\
+`float(value)` Returns the specified value to a float value.\
+`tryFloat(value)` Returns true if the specified value can be converted to a float value.
