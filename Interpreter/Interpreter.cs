@@ -276,7 +276,7 @@ namespace Interpreter
             result = null;
 
             // First, if the function has a point in it...
-            if (function.Contains("."))
+            if (function.Contains('.'))
             {
                 string[] splitedFunc = function.Split('.');
                 // And the text before that it's a variable.
@@ -300,7 +300,7 @@ namespace Interpreter
                 // First iterate foreach parameter and add them add them a new variable.
                 for (int i = 0; i < func.parameters.Count; i++)
                 {
-                    Init.variables.Add(new Variable(func.parameters[i], parameters[i]));
+                    Init.inFuncVariables.Add(new Variable(func.parameters[i], parameters[i]));
                 }
 
                 // Foreach line inside of the function block, execute the commands or functions.
@@ -326,7 +326,7 @@ namespace Interpreter
                 // Delete the function's variables.
                 for (int i = 0; i < func.parameters.Count; i++)
                 {
-                    Init.variables.RemoveAll(var => var.name == func.parameters[i]);
+                    Init.inFuncVariables.RemoveAll(var => var.name == func.parameters[i]);
                 }
 
                 // The function was executed successfully.
@@ -482,10 +482,13 @@ namespace Interpreter
                 return bool.Parse(text);
             }
 
-            // Check if there's a variable with that name.
-            if (Init.variables.Any(var => var.name == text))
+            if (Init.inFuncVariables.Any(var => var.name == text)) // And there's an in functon variable with that name...
             {
-                return Init.variables.Find(var => var.name == text).value;
+                return Init.inFuncVariables.Find(var => var.name == text).value; // Return that value.
+            }
+            if (Init.variables.Any(var => var.name == text)) // Check if there's a variable with that name.
+            {
+                return Init.variables.Find(var => var.name == text).value; // Return that value.
             }
 
             // Check if the value can be treated as a IF statement.
