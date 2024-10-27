@@ -35,7 +35,7 @@ The default values are:\
 `float` Put any valid number with an `f` at the end.\
 `bool` Put `true`, `false` OR a bool operator, such as `1 == 1`.
 
-The variables also have functions in them, such as:
+The variables also have functions in them, such as:\
 `getType()` To get the current type of the variable.
 
 ## Libraries
