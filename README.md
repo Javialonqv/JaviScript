@@ -24,6 +24,8 @@ The built-in commands are the following ones:\
 `Else` To create a new block of code so, if the previous if it's NOT true, then this code will be executed.\
 `ElseIf <conditon>` To create a new block of code so, if the previous if it's NOT true AND the next conditions are TRUE, execute this code.\
 `EndIf` To end a block of code that represents an If one.
+`WHILE` To create a new block of code in loop if the conditions are true.\
+`ENDWHILE` To end a while code block.
 
 ### Variables
 The variables are defined with `var <name> <value>`. The two paramethers are required and the value type also can change.\
