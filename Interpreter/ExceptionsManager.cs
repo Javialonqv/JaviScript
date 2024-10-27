@@ -23,9 +23,9 @@ namespace Interpreter
         {
             PrintError(Init.currentLine, $"The built-in command \"{commandName}\" can´t be found.");
         }
-        public static void IncorrectCommandParametersNumber(string commandName, int parametersCount)
+        public static void IncorrectCommandParametersNumber(string commandName, int givenParametersCount, string expectedParametersCount)
         {
-            PrintError(Init.currentLine, $"The built-in command \"{commandName}\" doesn't take {parametersCount} parameters.");
+            PrintError(Init.currentLine, $"The built-in command \"{commandName}\" doesn't take {givenParametersCount} parameters.  Has to be {expectedParametersCount}.");
         }
 
         public static void NoFunctionParenthesisFound(string functionName)

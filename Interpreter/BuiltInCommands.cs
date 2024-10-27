@@ -18,7 +18,7 @@ namespace Interpreter
         {
             if (parameters.Length != 1)
             {
-                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length, "1");
                 return false;
             }
 
@@ -42,7 +42,7 @@ namespace Interpreter
         {
             if (parameters.Length != 2)
             {
-                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length, "2");
                 return false;
             }
             string funcName = parameters[0].ToString();
@@ -58,9 +58,9 @@ namespace Interpreter
 
         public static bool Return(BuiltInCommand commandType, object[] parameters, out object? result)
         {
-            if (parameters.Length > 1)
+            if (parameters.Length != 1)
             {
-                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length, "1");
                 result = null;
                 return false;
             }
@@ -73,7 +73,7 @@ namespace Interpreter
         {
             if (parameters.Length > 1)
             {
-                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length, "2");
                 return false;
             }
 
@@ -85,7 +85,7 @@ namespace Interpreter
         {
             if (parameters.Length > 1)
             {
-                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length);
+                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length, "2");
                 return false;
             }
 
