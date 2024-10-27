@@ -597,8 +597,8 @@ namespace Interpreter
 
             #region Tokenize
             // The REGEX pattern (I dont even know what does this means).
-            //string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)";
-            string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+\\([^()]*\\([^()]*\\)[^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)\r\n";
+            string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)";
+            //string pattern = "\"(?:\\\\.|[^\"\\\\])*\"|\\w+\\([^()]*\\)|\\w+\\([^()]*\\([^()]*\\)[^()]*\\)|\\w+|\\d+|[\\+\\-\\*/]|\\(|\\)\r\n";
 
             // Create the "tokens"
             text = text.RemoveWhitespaces();
