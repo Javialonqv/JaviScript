@@ -9,6 +9,7 @@ using Windows.Media.AppBroadcasting;
 using Interpreter.Libraries;
 using Windows.ApplicationModel.Background;
 using System.Numerics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 #pragma warning disable CS8603
 #pragma warning disable CS8602
@@ -25,7 +26,9 @@ namespace Interpreter
         IF,
         ELSE,
         ELSEIF,
-        ENDIF
+        ENDIF,
+        WHILE,
+        ENDWHILE
     }
 
     internal class Interpreter
@@ -44,8 +47,10 @@ namespace Interpreter
         {
             result = null;
 
+            line = line.Trim();
+
             // Those lines that starts with '#' are comments, ignore them.
-            if (line.StartsWith("# ")) return false;
+            if (line.StartsWith("#")) return false;
 
             // If the line is null of empty, skip it.
             if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) return false;
@@ -90,12 +95,32 @@ namespace Interpreter
                     Init.inAnElseStatement = false;
                 }
 
+                if (command == BuiltInCommand.ENDWHILE)
+                {
+                    if (Init.whileBlocks.Count == 0) return false;
+
+                    if (GetValue(Init.whileBlocks.Peek().command))
+                    {
+                        Init.realCurrentLine = Init.whileBlocks.Peek().line;
+                        return false;
+                    }
+                }
+
                 // First check if it's inside of a If block, if that's the case, check if this code should be executed.
                 if (Init.ifBlocks.Count > 0)
                 {
                     // Just execute if the "If" is false and it's an else code block
                     // OR if the "If" is true and it's NOT in an else code block.
                     if ((!Init.ifBlocks.Peek() && !Init.inAnElseStatement) || (Init.ifBlocks.Peek() && Init.inAnElseStatement))
+                    {
+                        return false;
+                    }
+                }
+
+                // Check if it's inside of a While block, if that's the case, check if this code should be executed.
+                if (Init.whileBlocks.Count > 0)
+                {
+                    if (!Init.whileBlocks.Peek().result)
                     {
                         return false;
                     }
@@ -112,6 +137,15 @@ namespace Interpreter
                     // Just execute if the "If" is false and it's an else code block
                     // OR if the "If" is true and it's NOT in an else code block.
                     if ((!Init.ifBlocks.Peek() && !Init.inAnElseStatement) || (Init.ifBlocks.Peek() && Init.inAnElseStatement))
+                    {
+                        return false;
+                    }
+                }
+
+                // Check if it's inside of a While block, if that's the case, check if this code should be executed.
+                if (Init.whileBlocks.Count > 0)
+                {
+                    if (!Init.whileBlocks.Peek().result)
                     {
                         return false;
                     }
@@ -210,6 +244,10 @@ namespace Interpreter
                 case BuiltInCommand.ELSEIF:
                     result = null;
                     return BuiltInCommands.ElseIf(commandType, parameters);
+
+                case BuiltInCommand.WHILE:
+                    result = null;
+                    return BuiltInCommands.While(commandType, parameters);
             }
 
             result = null;
@@ -449,6 +487,8 @@ namespace Interpreter
         // Try to convert the specified text into a value.
         public static dynamic GetValue(string text)
         {
+            text = text.Trim();
+
             // Check if the value is null or undefined.
             if (text == "null" || text == "Null" || text == "undefined" || text == "Undefined")
             {
@@ -733,6 +773,8 @@ namespace Interpreter
         // Tries the specified command as an assigment one. 
         public static bool TryToAssign(string commandLine)
         {
+            commandLine = commandLine.Trim();
+
             // Remove all the whitespaces in the command.
             commandLine = commandLine.RemoveWhitespaces();
 
@@ -748,7 +790,7 @@ namespace Interpreter
             // This only will work if the specified variable already exists and it's defined.
             if (Init.variables.Any(var => var.name == variableName))
             {
-                Init.variables[Init.variables.FindIndex(var => var.name == variableName)] = GetValue(newValue);
+                Init.variables[Init.variables.FindIndex(var => var.name == variableName)].value = GetValue(newValue);
                 return true;
             }
             else // Else, throw an error.

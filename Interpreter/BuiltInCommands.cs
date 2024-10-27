@@ -93,5 +93,26 @@ namespace Interpreter
             Init.ifBlocks.Push((bool)parameters[0] && !oldIfBlock);
             return true;
         }
+
+        public static bool While(BuiltInCommand commandType, object[] parameters)
+        {
+            if (parameters.Length > 1)
+            {
+                ExceptionsManager.IncorrectCommandParametersNumber(commandType.ToString(), parameters.Length, "2");
+                return false;
+            }
+
+            // Splits into spaces, then skips the first element.
+            object[] splitedIntoSpaces = Init.fileLines[Init.realCurrentLine].SplitWithSpaces().Skip(1).ToArray();
+
+            // Combine all this into a simple string.
+            string combinedText = string.Join("", splitedIntoSpaces);
+
+            // Finally, split again by commas.
+            string[] result = combinedText.Split(",");
+
+            Init.whileBlocks.Push(((bool)parameters[0], Init.realCurrentLine, result[0]));
+            return true;
+        }
     }
 }

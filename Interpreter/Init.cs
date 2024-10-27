@@ -10,12 +10,14 @@ namespace Interpreter
 
         public static string[] fileLines = Array.Empty<string>();
         public static int currentLine;
+        public static int realCurrentLine;
 
         public static List<Library> loadedLibraries = new List<Library>();
         public static List<CustomFunction> customFunctions = new List<CustomFunction>();
         public static List<Variable> variables = new List<Variable>();
         public static List<Variable> inFuncVariables = new List<Variable>();
         public static Stack<bool> ifBlocks = new Stack<bool>();
+        public static Stack<(bool result, int line, string command)> whileBlocks = new Stack<(bool result, int line, string command)>();
 
         public static bool insideOfAFunctionBlock = false;
         public static bool inAnElseStatement;
@@ -86,10 +88,10 @@ namespace Interpreter
         void ExecuteLines()
         {
             // Iterate foreach file line and execute it's code.
-            for (int i = 0; i < fileLines.Length; i++)
+            for (realCurrentLine = 0; realCurrentLine < fileLines.Length; realCurrentLine++)
             {
-                currentLine = i + 1;
-                string line = fileLines[i];
+                currentLine = realCurrentLine + 1;
+                string line = fileLines[realCurrentLine];
 
                 Interpreter.ExecuteLine(line);
             }
