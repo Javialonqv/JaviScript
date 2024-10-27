@@ -51,7 +51,7 @@ The functions are the following ones:\
 `exit([<code>])` Exits from the application with the specified exit code, 0 if no exit code if specified.
 ### Console Library
 This library has utilities to interact with the console.\
-`pause() or pause(text)` Pauses the code executing and wait for a key from the user.\
+`pause([text])` Pauses the code executing and wait for a key from the user.\
 `input()` Returns the input of the user in a string.\
 `key()` Returns the key pressed by the user.\
 `clear()` Clears the console.\
