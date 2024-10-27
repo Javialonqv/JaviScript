@@ -343,15 +343,16 @@ namespace Interpreter
 
                 // Foreach line inside of the function block, execute the commands or functions.
                 int currentLineBeforeExecution = Init.currentLine;
-                for (int i = func.startIndex + 1; i < Init.fileLines.Length; i++)
+                int realCurrentLineBeforeExecution = Init.realCurrentLine;
+                for (Init.realCurrentLine = func.startIndex + 1; Init.realCurrentLine < Init.fileLines.Length; Init.realCurrentLine++)
                 {
-                    Init.currentLine = i + 1;
-                    if (Init.fileLines[i] == "EndFunc") break;
-                    if (ExecuteLine(Init.fileLines[i].Trim(), out object? customFuncResult, true))
+                    Init.currentLine = Init.realCurrentLine + 1;
+                    if (Init.fileLines[Init.realCurrentLine] == "EndFunc") break;
+                    if (ExecuteLine(Init.fileLines[Init.realCurrentLine].Trim(), out object? customFuncResult, true))
                     {
-                        if (ItsABuiltInCommand(Init.fileLines[i].Trim()))
+                        if (ItsABuiltInCommand(Init.fileLines[Init.realCurrentLine].Trim()))
                         {
-                            if (GetBuiltItCommand(Init.fileLines[i].Trim()) == BuiltInCommand.RETURN)
+                            if (GetBuiltItCommand(Init.fileLines[Init.realCurrentLine].Trim()) == BuiltInCommand.RETURN)
                             {
                                 result = customFuncResult;
                             }
@@ -359,6 +360,7 @@ namespace Interpreter
                     }
                 }
 
+                Init.realCurrentLine = realCurrentLineBeforeExecution;
                 Init.currentLine = currentLineBeforeExecution;
 
                 // Delete the function's variables.
@@ -409,6 +411,11 @@ namespace Interpreter
                     if (Init.ifBlocks.Count > 0) // You can't write functions inside of an if block.
                     {
                         ExceptionsManager.CantDefineFunctionsInsideOfBlock("If");
+                        return false;
+                    }
+                    if (Init.whileBlocks.Count > 0) // You can't write functions inside of a WHILE block.
+                    {
+                        ExceptionsManager.CantDefineFunctionsInsideOfBlock("WHILE");
                         return false;
                     }
                     if (Init.insideOfAFunctionBlock) // To begin a new function you need to close the last one first, lol.
@@ -473,7 +480,23 @@ namespace Interpreter
                     }
                     else
                     {
-                        ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "EndBlock");
+                        ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("If", "EndIf");
+                        return false;
+                    }
+                }
+                if (command == BuiltInCommand.WHILE)
+                {
+                    Init.whileBlocks.Push((false, 0, "")); // Just for testing.
+                }
+                if (command == BuiltInCommand.ENDWHILE)
+                {
+                    if (Init.whileBlocks.Count > 0)
+                    {
+                        Init.whileBlocks.Pop();
+                    }
+                    else
+                    {
+                        ExceptionsManager.EndBlockDetectedBeforeDefiningANewOne("WHILE", "ENDWHILE");
                         return false;
                     }
                 }
@@ -876,6 +899,12 @@ namespace Interpreter
                 ExceptionsManager.BlockNotClosed("If");
                 return false;
             }
+            // If the WHILE Blocks count is greater than 0, that means a WHILE block wasn't closed before reaching the end of the file.
+            if (Init.whileBlocks.Count > 0)
+            {
+                ExceptionsManager.BlockNotClosed("WHILE");
+                return false;
+            }
             // If true that means no EndFunc code was reached. Throw an error.
             if (Init.insideOfAFunctionBlock)
             {
@@ -888,6 +917,7 @@ namespace Interpreter
             Init.currentLine = 0;
             Init.insideOfAFunctionBlock = false;
             Init.ifBlocks = new Stack<bool>();
+            Init.whileBlocks = new Stack<(bool result, int line, string command)>();
 
             return true;
         }
