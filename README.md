@@ -49,6 +49,14 @@ The functions are the following ones:\
 `print(value)` To print the specified value in the console.\
 `printl(value)` To print the specified value in the console AND prints a new line.\
 `exit([<code>])` Exits from the application with the specified exit code, 0 if no exit code if specified.
+### Console Library
+This library has utilities to interact with the console.\
+`pause() or pause(text)` Pauses the code executing and wait for a key from the user.\
+`input()` Returns the input of the user in a string.\
+`key()` Returns the key pressed by the user.\
+`clear()` Clears the console.\
+`fgColor(color)` Changes the foreground color of the console.\
+`bgColor(color)` Changes the background color of the console.\
 ### Convert Library
 This library has utilities to convert values from a type to another one.\
 The functions are the following ones:\
@@ -62,5 +70,5 @@ The functions are the following ones:\
 This library has utilities to execute code or certain operations at internal level.\
 The functions are the following ones:\
 `execute(text)` Executes the specified command in **JaviScript** language.\
-`execute(text)` Executes the specified **C#** code.\
+`call(text)` Executes the specified **C#** code.\
 `getType(variable)` Returns the type of the specified variable.
